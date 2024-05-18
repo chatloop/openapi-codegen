@@ -1,6 +1,6 @@
 import { omit } from "lodash";
 import ts, { factory } from "typescript";
-import { OperationObject } from "openapi3-ts";
+import { OperationObject } from "openapi3-ts/oas31";
 
 import { petstore } from "../fixtures/petstore";
 import { getOperationTypes } from "./getOperationTypes";
@@ -30,7 +30,7 @@ describe("getOperationTypes", () => {
       openAPIDocument: petstore,
       printNodes: () => "",
       variablesExtraPropsType: factory.createKeywordTypeNode(
-        ts.SyntaxKind.VoidKeyword
+        ts.SyntaxKind.VoidKeyword,
       ),
     });
 
@@ -46,7 +46,7 @@ describe("getOperationTypes", () => {
       operationId: "listPet",
       operation: omit(
         petstore.paths["/pets"].get,
-        "parameters"
+        "parameters",
       ) as OperationObject,
       openAPIDocument: petstore,
       printNodes: () => "",
@@ -54,7 +54,7 @@ describe("getOperationTypes", () => {
     });
 
     expect(print(output.declarationNodes[2])).toMatchInlineSnapshot(
-      `"export type ListPetVariables = ExtraProps;"`
+      `"export type ListPetVariables = ExtraProps;"`,
     );
   });
 
@@ -63,12 +63,12 @@ describe("getOperationTypes", () => {
       operationId: "listPet",
       operation: omit(
         petstore.paths["/pets"].get,
-        "parameters"
+        "parameters",
       ) as OperationObject,
       openAPIDocument: petstore,
       printNodes: () => "",
       variablesExtraPropsType: factory.createKeywordTypeNode(
-        ts.SyntaxKind.VoidKeyword
+        ts.SyntaxKind.VoidKeyword,
       ),
     });
 

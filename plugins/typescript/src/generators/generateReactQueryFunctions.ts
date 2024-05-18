@@ -3,7 +3,7 @@ import * as c from "case";
 import { get } from "lodash";
 
 import { ConfigBase, Context } from "./types";
-import { PathItemObject } from "openapi3-ts";
+import { PathItemObject } from "openapi3-ts/oas31";
 
 import { getUsedImports } from "../core/getUsedImports";
 import { createWatermark } from "../core/createWatermark";
@@ -41,12 +41,12 @@ export type Config = ConfigBase & {
 
 export const generateReactQueryFunctions = async (
   context: Context,
-  config: Config
+  config: Config,
 ) => {
   const sourceFile = ts.createSourceFile(
     "index.ts",
     "",
-    ts.ScriptTarget.Latest
+    ts.ScriptTarget.Latest,
   );
 
   const printer = ts.createPrinter({
@@ -92,132 +92,135 @@ export const generateReactQueryFunctions = async (
         prefix: filenamePrefix,
         contextPath: contextFilename,
         baseUrl: get(context.openAPIDocument, "servers.0.url"),
-      })
+      }),
     );
   }
 
   if (!context.existsFile(`${contextFilename}.ts`)) {
     context.writeFile(
       `${contextFilename}.ts`,
-      getContext(filenamePrefix, filename)
+      getContext(filenamePrefix, filename),
     );
   }
 
   // Generate `useQuery` & `useMutation`
   const operationIds: string[] = [];
 
-  Object.entries(context.openAPIDocument.paths).forEach(
-    ([route, verbs]: [string, PathItemObject]) => {
-      Object.entries(verbs).forEach(([verb, operation]) => {
-        if (!isVerb(verb) || !isOperationObject(operation)) return;
-        const operationId = c.camel(operation.operationId);
-        if (operationIds.includes(operationId)) {
-          throw new Error(
-            `The operationId "${operation.operationId}" is duplicated in your schema definition!`
-          );
-        }
-        operationIds.push(operationId);
+  context.openAPIDocument.paths &&
+    Object.entries(context.openAPIDocument.paths).forEach(
+      ([route, verbs]: [string, PathItemObject]) => {
+        Object.entries(verbs).forEach(([verb, operation]) => {
+          if (!isVerb(verb) || !isOperationObject(operation)) return;
+          const operationId = c.camel(operation.operationId);
+          if (operationIds.includes(operationId)) {
+            throw new Error(
+              `The operationId "${operation.operationId}" is duplicated in your schema definition!`,
+            );
+          }
+          operationIds.push(operationId);
 
-        const {
-          dataType,
-          errorType,
-          requestBodyType,
-          pathParamsType,
-          variablesType,
-          queryParamsType,
-          headersType,
-          declarationNodes,
-        } = getOperationTypes({
-          openAPIDocument: context.openAPIDocument,
-          operation,
-          operationId,
-          printNodes,
-          injectedHeaders: config.injectedHeaders,
-          pathParameters: verbs.parameters,
-          variablesExtraPropsType: f.createIndexedAccessTypeNode(
-            f.createTypeReferenceNode(
-              f.createIdentifier(contextTypeName),
-              undefined
+          const {
+            dataType,
+            errorType,
+            requestBodyType,
+            pathParamsType,
+            variablesType,
+            queryParamsType,
+            headersType,
+            declarationNodes,
+          } = getOperationTypes({
+            openAPIDocument: context.openAPIDocument,
+            operation,
+            operationId,
+            printNodes,
+            injectedHeaders: config.injectedHeaders,
+            pathParameters: verbs.parameters,
+            variablesExtraPropsType: f.createIndexedAccessTypeNode(
+              f.createTypeReferenceNode(
+                f.createIdentifier(contextTypeName),
+                undefined,
+              ),
+              f.createLiteralTypeNode(f.createStringLiteral("fetcherOptions")),
             ),
-            f.createLiteralTypeNode(f.createStringLiteral("fetcherOptions"))
-          ),
+          });
+
+          const operationFetcherFnName = `fetch${c.pascal(operationId)}`;
+          const operationQueryFnName = `${c.pascal(operationId)}Query`;
+          const component: "useQuery" | "useMutate" | "useInfiniteQuery" =
+            operation["x-openapi-codegen-component"] ||
+            (verb === "get" ? "useQuery" : "useMutate");
+
+          if (
+            !["useQuery", "useMutate", "useInfiniteQuery"].includes(component)
+          ) {
+            throw new Error(`[x-openapi-codegen-component] Invalid value for ${operation.operationId} operation
+          Valid options: "useMutate", "useQuery", "useInfiniteQuery"`);
+          }
+
+          if (component === "useQuery") {
+            nodes.push(...declarationNodes);
+
+            keyManagerItems.push(
+              f.createTypeLiteralNode([
+                f.createPropertySignature(
+                  undefined,
+                  f.createIdentifier("path"),
+                  undefined,
+                  f.createLiteralTypeNode(
+                    f.createStringLiteral(camelizedPathParams(route)),
+                  ),
+                ),
+                f.createPropertySignature(
+                  undefined,
+                  f.createIdentifier("operationId"),
+                  undefined,
+                  f.createLiteralTypeNode(f.createStringLiteral(operationId)),
+                ),
+                f.createPropertySignature(
+                  undefined,
+                  f.createIdentifier("variables"),
+                  undefined,
+                  variablesType,
+                ),
+              ]),
+            );
+
+            nodes.push(
+              ...createOperationFetcherFnNodes({
+                dataType,
+                errorType,
+                requestBodyType,
+                pathParamsType,
+                variablesType,
+                queryParamsType,
+                headersType,
+                operation,
+                fetcherFn,
+                url: route,
+                verb,
+                name: operationFetcherFnName,
+              }),
+              ...createOperationQueryFnNodes({
+                operationFetcherFnName,
+                dataType,
+                errorType,
+                requestBodyType,
+                pathParamsType,
+                variablesType,
+                queryParamsType,
+                headersType,
+                operation,
+                operationId,
+                fetcherFn,
+                url: route,
+                verb,
+                name: operationQueryFnName,
+              }),
+            );
+          }
         });
-
-        const operationFetcherFnName = `fetch${c.pascal(operationId)}`;
-        const operationQueryFnName = `${c.pascal(operationId)}Query`;
-        const component: "useQuery" | "useMutate" =
-          operation["x-openapi-codegen-component"] ||
-          (verb === "get" ? "useQuery" : "useMutate");
-
-        if (!["useQuery", "useMutate"].includes(component)) {
-          throw new Error(`[x-openapi-codegen-component] Invalid value for ${operation.operationId} operation
-          Valid options: "useMutate", "useQuery"`);
-        }
-
-        if (component === "useQuery") {
-          nodes.push(...declarationNodes);
-
-          keyManagerItems.push(
-            f.createTypeLiteralNode([
-              f.createPropertySignature(
-                undefined,
-                f.createIdentifier("path"),
-                undefined,
-                f.createLiteralTypeNode(
-                  f.createStringLiteral(camelizedPathParams(route))
-                )
-              ),
-              f.createPropertySignature(
-                undefined,
-                f.createIdentifier("operationId"),
-                undefined,
-                f.createLiteralTypeNode(f.createStringLiteral(operationId))
-              ),
-              f.createPropertySignature(
-                undefined,
-                f.createIdentifier("variables"),
-                undefined,
-                variablesType
-              ),
-            ])
-          );
-
-          nodes.push(
-            ...createOperationFetcherFnNodes({
-              dataType,
-              errorType,
-              requestBodyType,
-              pathParamsType,
-              variablesType,
-              queryParamsType,
-              headersType,
-              operation,
-              fetcherFn,
-              url: route,
-              verb,
-              name: operationFetcherFnName,
-            }),
-            ...createOperationQueryFnNodes({
-              operationFetcherFnName,
-              dataType,
-              errorType,
-              requestBodyType,
-              pathParamsType,
-              variablesType,
-              queryParamsType,
-              headersType,
-              operation,
-              operationId,
-              fetcherFn,
-              url: route,
-              verb,
-              name: operationQueryFnName,
-            })
-          );
-        }
-      });
-    }
-  );
+      },
+    );
 
   if (operationIds.length === 0) {
     console.log(`⚠️ You don't have any operation with "operationId" defined!`);
@@ -233,21 +236,21 @@ export const generateReactQueryFunctions = async (
             undefined,
             f.createIdentifier("path"),
             undefined,
-            f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+            f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
           ),
           f.createPropertySignature(
             undefined,
             f.createIdentifier("operationId"),
             undefined,
-            f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword)
+            f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
           ),
           f.createPropertySignature(
             undefined,
             f.createIdentifier("variables"),
             undefined,
-            f.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword)
+            f.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword),
           ),
-        ])
+        ]),
   );
 
   const { nodes: usedImportsNodes, keys: usedImportsKeys } = getUsedImports(
@@ -255,7 +258,7 @@ export const generateReactQueryFunctions = async (
     {
       ...config.schemasFiles,
       utils: utilsFilename,
-    }
+    },
   );
 
   if (usedImportsKeys.includes("utils")) {
@@ -269,14 +272,14 @@ export const generateReactQueryFunctions = async (
       createReactQueryImport(),
       createNamedImport(
         [contextTypeName, "queryKeyFn"],
-        `./${contextFilename}`
+        `./${contextFilename}`,
       ),
       createNamespaceImport("Fetcher", `./${fetcherFilename}`),
       createNamedImport(fetcherFn, `./${fetcherFilename}`),
       ...usedImportsNodes,
       ...nodes,
       queryKeyManager,
-    ])
+    ]),
   );
 };
 
@@ -286,8 +289,8 @@ const createReactQueryImport = () =>
     f.createImportClause(
       false,
       undefined,
-      f.createNamespaceImport(f.createIdentifier("reactQuery"))
+      f.createNamespaceImport(f.createIdentifier("reactQuery")),
     ),
     f.createStringLiteral("@tanstack/react-query"),
-    undefined
+    undefined,
   );

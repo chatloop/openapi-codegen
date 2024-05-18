@@ -1,5 +1,5 @@
 import { set } from "lodash";
-import { OpenAPIObject } from "openapi3-ts";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { Config, generateFetchers } from "./generateFetchers";
 
 const config: Config = {

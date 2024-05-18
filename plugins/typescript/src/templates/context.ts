@@ -31,7 +31,7 @@ export const getContext = (prefix: string, componentsFile: string) =>
   /**
    * Context injected into every react-query hook wrappers
    * 
-   * @param queryOptions options from the useQuery wrapper
+   * @param _queryOptions options from the useQuery wrapper
    */
    export function use${pascal(prefix)}Context<
    TQueryFnData = unknown,

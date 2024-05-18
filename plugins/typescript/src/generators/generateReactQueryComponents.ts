@@ -3,7 +3,7 @@ import * as c from "case";
 import { get } from "lodash";
 
 import { ConfigBase, Context } from "./types";
-import { OperationObject, PathItemObject } from "openapi3-ts";
+import { OperationObject, PathItemObject } from "openapi3-ts/oas31";
 
 import { getUsedImports } from "../core/getUsedImports";
 import { createWatermark } from "../core/createWatermark";
@@ -39,12 +39,12 @@ export type Config = ConfigBase & {
 
 export const generateReactQueryComponents = async (
   context: Context,
-  config: Config
+  config: Config,
 ) => {
   const sourceFile = ts.createSourceFile(
     "index.ts",
     "",
-    ts.ScriptTarget.Latest
+    ts.ScriptTarget.Latest,
   );
 
   const printer = ts.createPrinter({
@@ -91,98 +91,34 @@ export const generateReactQueryComponents = async (
         prefix: filenamePrefix,
         contextPath: contextFilename,
         baseUrl: get(context.openAPIDocument, "servers.0.url"),
-      })
+      }),
     );
   }
 
   if (!context.existsFile(`${contextFilename}.ts`)) {
     context.writeFile(
       `${contextFilename}.ts`,
-      getContext(filenamePrefix, filename)
+      getContext(filenamePrefix, filename),
     );
   }
 
   // Generate `useQuery` & `useMutation`
   const operationIds: string[] = [];
 
-  Object.entries(context.openAPIDocument.paths).forEach(
-    ([route, verbs]: [string, PathItemObject]) => {
-      Object.entries(verbs).forEach(([verb, operation]) => {
-        if (!isVerb(verb) || !isOperationObject(operation)) return;
-        const operationId = c.camel(operation.operationId);
-        if (operationIds.includes(operationId)) {
-          throw new Error(
-            `The operationId "${operation.operationId}" is duplicated in your schema definition!`
-          );
-        }
-        operationIds.push(operationId);
+  context.openAPIDocument.paths &&
+    Object.entries(context.openAPIDocument.paths).forEach(
+      ([route, verbs]: [string, PathItemObject]) => {
+        Object.entries(verbs).forEach(([verb, operation]) => {
+          if (!isVerb(verb) || !isOperationObject(operation)) return;
+          const operationId = c.camel(operation.operationId);
+          if (operationIds.includes(operationId)) {
+            throw new Error(
+              `The operationId "${operation.operationId}" is duplicated in your schema definition!`,
+            );
+          }
+          operationIds.push(operationId);
 
-        const {
-          dataType,
-          errorType,
-          requestBodyType,
-          pathParamsType,
-          variablesType,
-          queryParamsType,
-          headersType,
-          declarationNodes,
-        } = getOperationTypes({
-          openAPIDocument: context.openAPIDocument,
-          operation,
-          operationId,
-          printNodes,
-          injectedHeaders: config.injectedHeaders,
-          pathParameters: verbs.parameters,
-          variablesExtraPropsType: f.createIndexedAccessTypeNode(
-            f.createTypeReferenceNode(
-              f.createIdentifier(contextTypeName),
-              undefined
-            ),
-            f.createLiteralTypeNode(f.createStringLiteral("fetcherOptions"))
-          ),
-        });
-
-        nodes.push(...declarationNodes);
-
-        const operationFetcherFnName = `fetch${c.pascal(operationId)}`;
-        const component: "useQuery" | "useMutate" =
-          operation["x-openapi-codegen-component"] ||
-          (verb === "get" ? "useQuery" : "useMutate");
-
-        if (!["useQuery", "useMutate"].includes(component)) {
-          throw new Error(`[x-openapi-codegen-component] Invalid value for ${operation.operationId} operation
-          Valid options: "useMutate", "useQuery"`);
-        }
-
-        if (component === "useQuery") {
-          keyManagerItems.push(
-            f.createTypeLiteralNode([
-              f.createPropertySignature(
-                undefined,
-                f.createIdentifier("path"),
-                undefined,
-                f.createLiteralTypeNode(
-                  f.createStringLiteral(camelizedPathParams(route))
-                )
-              ),
-              f.createPropertySignature(
-                undefined,
-                f.createIdentifier("operationId"),
-                undefined,
-                f.createLiteralTypeNode(f.createStringLiteral(operationId))
-              ),
-              f.createPropertySignature(
-                undefined,
-                f.createIdentifier("variables"),
-                undefined,
-                variablesType
-              ),
-            ])
-          );
-        }
-
-        nodes.push(
-          ...createOperationFetcherFnNodes({
+          const {
             dataType,
             errorType,
             requestBodyType,
@@ -190,14 +126,68 @@ export const generateReactQueryComponents = async (
             variablesType,
             queryParamsType,
             headersType,
+            declarationNodes,
+          } = getOperationTypes({
+            openAPIDocument: context.openAPIDocument,
             operation,
-            fetcherFn,
-            url: route,
-            verb,
-            name: operationFetcherFnName,
-          }),
-          ...(component === "useQuery"
-            ? createQueryHook({
+            operationId,
+            printNodes,
+            injectedHeaders: config.injectedHeaders,
+            pathParameters: verbs.parameters,
+            variablesExtraPropsType: f.createIndexedAccessTypeNode(
+              f.createTypeReferenceNode(
+                f.createIdentifier(contextTypeName),
+                undefined,
+              ),
+              f.createLiteralTypeNode(f.createStringLiteral("fetcherOptions")),
+            ),
+          });
+
+          nodes.push(...declarationNodes);
+
+          const operationFetcherFnName = `fetch${c.pascal(operationId)}`;
+          const component: "useQuery" | "useMutate" | "useInfiniteQuery" =
+            operation["x-openapi-codegen-component"] ||
+            (verb === "get" ? "useQuery" : "useMutate");
+
+          if (
+            !["useQuery", "useMutate", "useInfiniteQuery"].includes(component)
+          ) {
+            throw new Error(`[x-openapi-codegen-component] Invalid value for ${operation.operationId} operation
+          Valid options: "useMutate", "useQuery", "useInfiniteQuery"`);
+          }
+
+          if (component === "useQuery" || component === "useInfiniteQuery") {
+            keyManagerItems.push(
+              f.createTypeLiteralNode([
+                f.createPropertySignature(
+                  undefined,
+                  f.createIdentifier("path"),
+                  undefined,
+                  f.createLiteralTypeNode(
+                    f.createStringLiteral(camelizedPathParams(route)),
+                  ),
+                ),
+                f.createPropertySignature(
+                  undefined,
+                  f.createIdentifier("operationId"),
+                  undefined,
+                  f.createLiteralTypeNode(f.createStringLiteral(operationId)),
+                ),
+                f.createPropertySignature(
+                  undefined,
+                  f.createIdentifier("variables"),
+                  undefined,
+                  variablesType,
+                ),
+              ]),
+            );
+          }
+          let hook: ts.Node[];
+
+          switch (component) {
+            case "useInfiniteQuery":
+              hook = createInfiniteQueryHook({
                 operationFetcherFnName,
                 operation,
                 dataType,
@@ -207,8 +197,10 @@ export const generateReactQueryComponents = async (
                 name: `use${c.pascal(operationId)}`,
                 operationId,
                 url: route,
-              })
-            : createMutationHook({
+              });
+              break;
+            case "useQuery":
+              hook = createQueryHook({
                 operationFetcherFnName,
                 operation,
                 dataType,
@@ -216,11 +208,42 @@ export const generateReactQueryComponents = async (
                 variablesType,
                 contextHookName,
                 name: `use${c.pascal(operationId)}`,
-              }))
-        );
-      });
-    }
-  );
+                operationId,
+                url: route,
+              });
+              break;
+            case "useMutate":
+              hook = createMutationHook({
+                operationFetcherFnName,
+                operation,
+                dataType,
+                errorType,
+                variablesType,
+                contextHookName,
+                name: `use${c.pascal(operationId)}`,
+              });
+              break;
+          }
+          nodes.push(
+            ...createOperationFetcherFnNodes({
+              dataType,
+              errorType,
+              requestBodyType,
+              pathParamsType,
+              variablesType,
+              queryParamsType,
+              headersType,
+              operation,
+              fetcherFn,
+              url: route,
+              verb,
+              name: operationFetcherFnName,
+            }),
+            ...hook,
+          );
+        });
+      },
+    );
 
   if (operationIds.length === 0) {
     console.log(`⚠️ You don't have any operation with "operationId" defined!`);
@@ -236,21 +259,21 @@ export const generateReactQueryComponents = async (
             undefined,
             f.createIdentifier("path"),
             undefined,
-            f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword)
+            f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
           ),
           f.createPropertySignature(
             undefined,
             f.createIdentifier("operationId"),
             undefined,
-            f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword)
+            f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
           ),
           f.createPropertySignature(
             undefined,
             f.createIdentifier("variables"),
             undefined,
-            f.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword)
+            f.createKeywordTypeNode(ts.SyntaxKind.UnknownKeyword),
           ),
-        ])
+        ]),
   );
 
   const { nodes: usedImportsNodes, keys: usedImportsKeys } = getUsedImports(
@@ -258,7 +281,7 @@ export const generateReactQueryComponents = async (
     {
       ...config.schemasFiles,
       utils: utilsFilename,
-    }
+    },
   );
 
   if (usedImportsKeys.includes("utils")) {
@@ -272,14 +295,14 @@ export const generateReactQueryComponents = async (
       createReactQueryImport(),
       createNamedImport(
         [contextHookName, contextTypeName],
-        `./${contextFilename}`
+        `./${contextFilename}`,
       ),
       createNamespaceImport("Fetcher", `./${fetcherFilename}`),
       createNamedImport(fetcherFn, `./${fetcherFilename}`),
       ...usedImportsNodes,
       ...nodes,
       queryKeyManager,
-    ])
+    ]),
   );
 };
 
@@ -327,15 +350,15 @@ const createMutationHook = ({
                     f.createTypeReferenceNode(
                       f.createQualifiedName(
                         f.createIdentifier("reactQuery"),
-                        f.createIdentifier("UseMutationOptions")
+                        f.createIdentifier("UseMutationOptions"),
                       ),
-                      [dataType, errorType, variablesType]
+                      [dataType, errorType, variablesType],
                     ),
                     f.createLiteralTypeNode(
-                      f.createStringLiteral("mutationFn")
+                      f.createStringLiteral("mutationFn"),
                     ),
                   ]),
-                  undefined
+                  undefined,
                 ),
               ],
               undefined,
@@ -352,7 +375,7 @@ const createMutationHook = ({
                               undefined,
                               undefined,
                               f.createIdentifier("fetcherOptions"),
-                              undefined
+                              undefined,
                             ),
                           ]),
                           undefined,
@@ -360,18 +383,18 @@ const createMutationHook = ({
                           f.createCallExpression(
                             f.createIdentifier(contextHookName),
                             undefined,
-                            []
-                          )
+                            [],
+                          ),
                         ),
                       ],
-                      ts.NodeFlags.Const
-                    )
+                      ts.NodeFlags.Const,
+                    ),
                   ),
                   f.createReturnStatement(
                     f.createCallExpression(
                       f.createPropertyAccessExpression(
                         f.createIdentifier("reactQuery"),
-                        f.createIdentifier("useMutation")
+                        f.createIdentifier("useMutation"),
                       ),
                       [dataType, errorType, variablesType],
                       [
@@ -389,12 +412,12 @@ const createMutationHook = ({
                                     f.createIdentifier("variables"),
                                     undefined,
                                     variablesType,
-                                    undefined
+                                    undefined,
                                   ),
                                 ],
                                 undefined,
                                 f.createToken(
-                                  ts.SyntaxKind.EqualsGreaterThanToken
+                                  ts.SyntaxKind.EqualsGreaterThanToken,
                                 ),
                                 f.createCallExpression(
                                   f.createIdentifier(operationFetcherFnName),
@@ -403,36 +426,36 @@ const createMutationHook = ({
                                     f.createObjectLiteralExpression(
                                       [
                                         f.createSpreadAssignment(
-                                          f.createIdentifier("fetcherOptions")
+                                          f.createIdentifier("fetcherOptions"),
                                         ),
                                         f.createSpreadAssignment(
-                                          f.createIdentifier("variables")
+                                          f.createIdentifier("variables"),
                                         ),
                                       ],
-                                      false
+                                      false,
                                     ),
-                                  ]
-                                )
-                              )
+                                  ],
+                                ),
+                              ),
                             ),
                             f.createSpreadAssignment(
-                              f.createIdentifier("options")
+                              f.createIdentifier("options"),
                             ),
                           ],
-                          true
+                          true,
                         ),
-                      ]
-                    )
+                      ],
+                    ),
                   ),
                 ],
-                true
-              )
-            )
+                true,
+              ),
+            ),
           ),
         ],
-        ts.NodeFlags.Const
-      )
-    )
+        ts.NodeFlags.Const,
+      ),
+    ),
   );
 
   return nodes;
@@ -479,7 +502,7 @@ const createQueryHook = ({
                   undefined,
                   "TData",
                   undefined,
-                  dataType
+                  dataType,
                 ),
               ],
               [
@@ -488,14 +511,14 @@ const createQueryHook = ({
                   undefined,
                   f.createIdentifier("variables"),
                   undefined,
-                  variablesType
+                  variablesType,
                 ),
                 f.createParameterDeclaration(
                   undefined,
                   undefined,
                   f.createIdentifier("options"),
                   f.createToken(ts.SyntaxKind.QuestionToken),
-                  createUseQueryOptionsType(dataType, errorType)
+                  createUseQueryOptionsType(dataType, errorType),
                 ),
               ],
               undefined,
@@ -511,19 +534,19 @@ const createQueryHook = ({
                             undefined,
                             undefined,
                             f.createIdentifier("fetcherOptions"),
-                            undefined
+                            undefined,
                           ),
                           f.createBindingElement(
                             undefined,
                             undefined,
                             f.createIdentifier("queryOptions"),
-                            undefined
+                            undefined,
                           ),
                           f.createBindingElement(
                             undefined,
                             undefined,
                             f.createIdentifier("queryKeyFn"),
-                            undefined
+                            undefined,
                           ),
                         ]),
                         undefined,
@@ -531,25 +554,25 @@ const createQueryHook = ({
                         f.createCallExpression(
                           f.createIdentifier(contextHookName),
                           undefined,
-                          [f.createIdentifier("options")]
-                        )
+                          [f.createIdentifier("options")],
+                        ),
                       ),
                     ],
-                    ts.NodeFlags.Const
-                  )
+                    ts.NodeFlags.Const,
+                  ),
                 ),
                 f.createReturnStatement(
                   f.createCallExpression(
                     f.createPropertyAccessExpression(
                       f.createIdentifier("reactQuery"),
-                      f.createIdentifier("useQuery")
+                      f.createIdentifier("useQuery"),
                     ),
                     [
                       dataType,
                       errorType,
                       f.createTypeReferenceNode(
                         f.createIdentifier("TData"),
-                        []
+                        [],
                       ),
                     ],
                     [
@@ -565,19 +588,19 @@ const createQueryHook = ({
                                   f.createPropertyAssignment(
                                     "path",
                                     f.createStringLiteral(
-                                      camelizedPathParams(url)
-                                    )
+                                      camelizedPathParams(url),
+                                    ),
                                   ),
                                   f.createPropertyAssignment(
                                     "operationId",
-                                    f.createStringLiteral(operationId)
+                                    f.createStringLiteral(operationId),
                                   ),
                                   f.createShorthandPropertyAssignment(
-                                    f.createIdentifier("variables")
+                                    f.createIdentifier("variables"),
                                   ),
                                 ]),
-                              ]
-                            )
+                              ],
+                            ),
                           ),
                           f.createPropertyAssignment(
                             "queryFn",
@@ -592,14 +615,14 @@ const createQueryHook = ({
                                     f.createBindingElement(
                                       undefined,
                                       undefined,
-                                      "signal"
+                                      "signal",
                                     ),
-                                  ])
+                                  ]),
                                 ),
                               ],
                               undefined,
                               f.createToken(
-                                ts.SyntaxKind.EqualsGreaterThanToken
+                                ts.SyntaxKind.EqualsGreaterThanToken,
                               ),
                               f.createCallExpression(
                                 f.createIdentifier(operationFetcherFnName),
@@ -608,38 +631,245 @@ const createQueryHook = ({
                                   f.createObjectLiteralExpression(
                                     [
                                       f.createSpreadAssignment(
-                                        f.createIdentifier("fetcherOptions")
+                                        f.createIdentifier("fetcherOptions"),
                                       ),
                                       f.createSpreadAssignment(
-                                        f.createIdentifier("variables")
+                                        f.createIdentifier("variables"),
                                       ),
                                     ],
-                                    false
+                                    false,
                                   ),
                                   f.createIdentifier("signal"),
-                                ]
-                              )
-                            )
+                                ],
+                              ),
+                            ),
                           ),
                           f.createSpreadAssignment(
-                            f.createIdentifier("options")
+                            f.createIdentifier("options"),
                           ),
                           f.createSpreadAssignment(
-                            f.createIdentifier("queryOptions")
+                            f.createIdentifier("queryOptions"),
                           ),
                         ],
-                        true
+                        true,
                       ),
-                    ]
-                  )
+                    ],
+                  ),
                 ),
-              ])
-            )
+              ]),
+            ),
           ),
         ],
-        ts.NodeFlags.Const
-      )
-    )
+        ts.NodeFlags.Const,
+      ),
+    ),
+  );
+
+  return nodes;
+};
+
+const createInfiniteQueryHook = ({
+  operationFetcherFnName,
+  contextHookName,
+  dataType,
+  errorType,
+  variablesType,
+  name,
+  operationId,
+  operation,
+  url,
+}: {
+  operationFetcherFnName: string;
+  contextHookName: string;
+  name: string;
+  operationId: string;
+  url: string;
+  dataType: ts.TypeNode;
+  errorType: ts.TypeNode;
+  variablesType: ts.TypeNode;
+  operation: OperationObject;
+}) => {
+  const nodes: ts.Node[] = [];
+  if (operation.description) {
+    nodes.push(f.createJSDocComment(operation.description.trim(), []));
+  }
+  nodes.push(
+    f.createVariableStatement(
+      [f.createModifier(ts.SyntaxKind.ExportKeyword)],
+      f.createVariableDeclarationList(
+        [
+          f.createVariableDeclaration(
+            f.createIdentifier(name),
+            undefined,
+            undefined,
+            f.createArrowFunction(
+              undefined,
+              [
+                f.createTypeParameterDeclaration(
+                  undefined,
+                  "TData",
+                  undefined,
+                  dataType,
+                ),
+              ],
+              [
+                f.createParameterDeclaration(
+                  undefined,
+                  undefined,
+                  f.createIdentifier("variables"),
+                  undefined,
+                  variablesType,
+                ),
+                f.createParameterDeclaration(
+                  undefined,
+                  undefined,
+                  f.createIdentifier("options"),
+                  f.createToken(ts.SyntaxKind.QuestionToken),
+                  createUseQueryOptionsType(dataType, errorType),
+                ),
+              ],
+              undefined,
+              f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+              f.createBlock([
+                f.createVariableStatement(
+                  undefined,
+                  f.createVariableDeclarationList(
+                    [
+                      f.createVariableDeclaration(
+                        f.createObjectBindingPattern([
+                          f.createBindingElement(
+                            undefined,
+                            undefined,
+                            f.createIdentifier("fetcherOptions"),
+                            undefined,
+                          ),
+                          f.createBindingElement(
+                            undefined,
+                            undefined,
+                            f.createIdentifier("queryOptions"),
+                            undefined,
+                          ),
+                          f.createBindingElement(
+                            undefined,
+                            undefined,
+                            f.createIdentifier("queryKeyFn"),
+                            undefined,
+                          ),
+                        ]),
+                        undefined,
+                        undefined,
+                        f.createCallExpression(
+                          f.createIdentifier(contextHookName),
+                          undefined,
+                          [f.createIdentifier("options")],
+                        ),
+                      ),
+                    ],
+                    ts.NodeFlags.Const,
+                  ),
+                ),
+                f.createReturnStatement(
+                  f.createCallExpression(
+                    f.createPropertyAccessExpression(
+                      f.createIdentifier("reactQuery"),
+                      f.createIdentifier("useInfiniteQuery"),
+                    ),
+                    [
+                      dataType,
+                      errorType,
+                      f.createTypeReferenceNode(
+                        f.createIdentifier("TData"),
+                        [],
+                      ),
+                    ],
+                    [
+                      f.createObjectLiteralExpression(
+                        [
+                          f.createPropertyAssignment(
+                            "queryKey",
+                            f.createCallExpression(
+                              f.createIdentifier("queryKeyFn"),
+                              undefined,
+                              [
+                                f.createObjectLiteralExpression([
+                                  f.createPropertyAssignment(
+                                    "path",
+                                    f.createStringLiteral(
+                                      camelizedPathParams(url),
+                                    ),
+                                  ),
+                                  f.createPropertyAssignment(
+                                    "operationId",
+                                    f.createStringLiteral(operationId),
+                                  ),
+                                  f.createShorthandPropertyAssignment(
+                                    f.createIdentifier("variables"),
+                                  ),
+                                ]),
+                              ],
+                            ),
+                          ),
+                          f.createPropertyAssignment(
+                            "queryFn",
+                            f.createArrowFunction(
+                              undefined,
+                              undefined,
+                              [
+                                f.createParameterDeclaration(
+                                  undefined,
+                                  undefined,
+                                  f.createObjectBindingPattern([
+                                    f.createBindingElement(
+                                      undefined,
+                                      undefined,
+                                      "signal",
+                                    ),
+                                  ]),
+                                ),
+                              ],
+                              undefined,
+                              f.createToken(
+                                ts.SyntaxKind.EqualsGreaterThanToken,
+                              ),
+                              f.createCallExpression(
+                                f.createIdentifier(operationFetcherFnName),
+                                undefined,
+                                [
+                                  f.createObjectLiteralExpression(
+                                    [
+                                      f.createSpreadAssignment(
+                                        f.createIdentifier("fetcherOptions"),
+                                      ),
+                                      f.createSpreadAssignment(
+                                        f.createIdentifier("variables"),
+                                      ),
+                                    ],
+                                    false,
+                                  ),
+                                  f.createIdentifier("signal"),
+                                ],
+                              ),
+                            ),
+                          ),
+                          f.createSpreadAssignment(
+                            f.createIdentifier("options"),
+                          ),
+                          f.createSpreadAssignment(
+                            f.createIdentifier("queryOptions"),
+                          ),
+                        ],
+                        true,
+                      ),
+                    ],
+                  ),
+                ),
+              ]),
+            ),
+          ),
+        ],
+        ts.NodeFlags.Const,
+      ),
+    ),
   );
 
   return nodes;
@@ -647,19 +877,19 @@ const createQueryHook = ({
 
 const createUseQueryOptionsType = (
   dataType: ts.TypeNode,
-  errorType: ts.TypeNode
+  errorType: ts.TypeNode,
 ) =>
   f.createTypeReferenceNode(f.createIdentifier("Omit"), [
     f.createTypeReferenceNode(
       f.createQualifiedName(
         f.createIdentifier("reactQuery"),
-        f.createIdentifier("UseQueryOptions")
+        f.createIdentifier("UseQueryOptions"),
       ),
       [
         dataType,
         errorType,
         f.createTypeReferenceNode(f.createIdentifier("TData"), []),
-      ]
+      ],
     ),
     f.createUnionTypeNode([
       f.createLiteralTypeNode(f.createStringLiteral("queryKey")),
@@ -674,8 +904,8 @@ const createReactQueryImport = () =>
     f.createImportClause(
       false,
       undefined,
-      f.createNamespaceImport(f.createIdentifier("reactQuery"))
+      f.createNamespaceImport(f.createIdentifier("reactQuery")),
     ),
     f.createStringLiteral("@tanstack/react-query"),
-    undefined
+    undefined,
   );

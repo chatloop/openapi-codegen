@@ -1,4 +1,4 @@
-import { InfoObject } from "openapi3-ts";
+import { InfoObject } from "openapi3-ts/oas31";
 import { factory as f } from "typescript";
 
 /**
@@ -12,6 +12,6 @@ export const createWatermark = (info: InfoObject) =>
     f.createJSDocPropertyTag(
       f.createIdentifier("version"),
       f.createIdentifier(info.version),
-      false
+      false,
     ),
   ]);

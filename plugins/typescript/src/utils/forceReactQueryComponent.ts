@@ -1,5 +1,5 @@
 import { cloneDeep, set } from "lodash";
-import { OpenAPIObject, PathItemObject } from "openapi3-ts";
+import { OpenAPIObject, PathItemObject } from "openapi3-ts/oas31";
 
 import { isOperationObject } from "../core/isOperationObject";
 import { isVerb } from "../core/isVerb";
@@ -25,20 +25,21 @@ export const forceReactQueryComponent = <OperationId extends string>({
   let extensionPath: string | undefined;
 
   // Find the component
-  Object.entries(openAPIDocument.paths).forEach(
-    ([route, verbs]: [string, PathItemObject]) => {
-      Object.entries(verbs).forEach(([verb, operation]) => {
-        if (!isVerb(verb) || !isOperationObject(operation)) return;
-        if (operation.operationId === operationId) {
-          extensionPath = `paths.${route}.${verb}.x-openapi-codegen-component`;
-        }
-      });
-    }
-  );
+  openAPIDocument.paths &&
+    Object.entries(openAPIDocument.paths).forEach(
+      ([route, verbs]: [string, PathItemObject]) => {
+        Object.entries(verbs).forEach(([verb, operation]) => {
+          if (!isVerb(verb) || !isOperationObject(operation)) return;
+          if (operation.operationId === operationId) {
+            extensionPath = `paths.${route}.${verb}.x-openapi-codegen-component`;
+          }
+        });
+      },
+    );
 
   if (!extensionPath) {
     throw new Error(
-      `[forceReactQueryComponent] Operation with the operationId "${operationId}" not found`
+      `[forceReactQueryComponent] Operation with the operationId "${operationId}" not found`,
     );
   }
 

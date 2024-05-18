@@ -1,5 +1,5 @@
 import { get, set, unset } from "lodash";
-import { OpenAPIObject } from "openapi3-ts";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 
 /**
  * Util to rename an openAPI component name
@@ -25,8 +25,8 @@ export const renameComponent = ({
   const renamedOpenAPIDocument: OpenAPIObject = JSON.parse(
     JSON.stringify(openAPIDocument).replace(
       new RegExp(`"${from}"`, "g"),
-      `"${to}"`
-    )
+      `"${to}"`,
+    ),
   );
 
   const fromPath = from.slice("#/".length).replace(/\//g, ".");
