@@ -1,11 +1,11 @@
 {
-  "name": "@openapi-codegen/typescript",
+  "name": "@chatloop/openapi-codegen-typescript",
   "version": "8.0.2",
   "description": "OpenAPI Codegen typescript generators",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "repository": {
-    "url": "https://github.com/fabien0102/openapi-codegen",
+    "url": "https://github.com/chatloop/openapi-codegen",
     "directory": "plugins/typescript"
   },
   "publishConfig": {
