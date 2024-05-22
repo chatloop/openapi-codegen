@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.0.1](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.0.0...openapi-codegen-typescript-v9.0.1) (2024-05-22)
+
+
+### Bug Fixes
+
+* fix numeric emum keys ([b5d9f5b](https://github.com/chatloop/openapi-codegen/commit/b5d9f5b398f0ef4455c66129489a34afdf585a0d))
+
 ## [9.0.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v8.0.2...openapi-codegen-typescript-v9.0.0) (2024-05-22)
 
 
