@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.0.1](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-cli-v3.0.0...openapi-codegen-cli-v3.0.1) (2024-05-22)
+
+
+### Bug Fixes
+
+* resolve prettier config correctly ([16cdea0](https://github.com/chatloop/openapi-codegen/commit/16cdea04aa9da80ae8d5441465f939f66bbd5556))
+
 ## [3.0.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-cli-v2.0.2...openapi-codegen-cli-v3.0.0) (2024-05-22)
 
 
