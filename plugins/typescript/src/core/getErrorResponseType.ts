@@ -103,10 +103,12 @@ const createStatusDeclaration = (
 
   if (
     statusCode === "4xx" ||
-    (statusCode === "default" && status.includes("5xx"))
+    statusCode === "4XX" ||
+    (statusCode === "default" &&
+      (status.includes("5xx") || status.includes("5XX")))
   ) {
     const usedClientCode = status.filter(
-      (s) => s.startsWith("4") && s !== "4xx",
+      (s) => s.startsWith("4") && s !== "4xx" && s !== "4XX",
     );
     if (usedClientCode.length > 0) {
       statusType = f.createTypeReferenceNode("Exclude", [
@@ -126,10 +128,12 @@ const createStatusDeclaration = (
 
   if (
     statusCode === "5xx" ||
-    (statusCode === "default" && status.includes("4xx"))
+    statusCode === "5XX" ||
+    (statusCode === "default" &&
+      (status.includes("4xx") || status.includes("4XX")))
   ) {
     const usedServerCode = status.filter(
-      (s) => s.startsWith("5") && s !== "5xx",
+      (s) => s.startsWith("5") && s !== "5xx" && s !== "5XX",
     );
     if (usedServerCode.length > 0) {
       statusType = f.createTypeReferenceNode("Exclude", [
@@ -150,7 +154,9 @@ const createStatusDeclaration = (
   if (
     statusCode === "default" &&
     !status.includes("4xx") &&
-    !status.includes("5xx")
+    !status.includes("4XX") &&
+    !status.includes("5xx") &&
+    !status.includes("5XX")
   ) {
     const otherCodes = status.filter((s) => s !== "default");
     if (otherCodes.length > 0) {
@@ -177,8 +183,8 @@ const createStatusDeclaration = (
 
   if (
     statusCode === "default" &&
-    status.includes("4xx") &&
-    status.includes("5xx")
+    (status.includes("4xx") || status.includes("4XX")) &&
+    (status.includes("5xx") || status.includes("5XX"))
   ) {
     statusType = f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword);
   }

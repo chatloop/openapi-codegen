@@ -1,4 +1,4 @@
-import { OpenAPIObject } from "openapi3-ts";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 
 import type { OpenAPISourceFile } from "../types";
 
@@ -20,7 +20,7 @@ export const parseOpenAPISourceFile = ({
   const schema = format === "yaml" ? YAML.load(text) : JSON.parse(text);
 
   return new Promise((resolve, reject) => {
-    if (!schema.openapi || !schema.openapi.startsWith("3.0")) {
+    if (!schema.openapi || !schema.openapi.startsWith("3")) {
       swagger2openapi.convertObj(schema, {}, (err, convertedObj) => {
         if (err) {
           reject(err);

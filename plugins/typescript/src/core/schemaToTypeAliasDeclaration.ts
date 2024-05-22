@@ -10,7 +10,7 @@ import {
   isSchemaObject,
 } from "openapi3-ts/oas31";
 import { singular } from "pluralize";
-import { isValidIdentifier } from "tsutils";
+import { isValidPropertyName } from "tsutils";
 import ts, { factory as f } from "typescript";
 import { getReferenceSchema } from "./getReferenceSchema";
 
@@ -223,9 +223,7 @@ export const getType = (
 
           const propertyNode = f.createPropertySignature(
             undefined,
-            isValidIdentifier(key)
-              ? f.createIdentifier(key)
-              : f.createComputedPropertyName(f.createStringLiteral(key)),
+            isValidPropertyName(key) ? key : f.createStringLiteral(key),
             schema.required?.includes(key)
               ? undefined
               : f.createToken(ts.SyntaxKind.QuestionToken),

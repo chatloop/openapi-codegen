@@ -4,9 +4,11 @@ import { OpenAPIObject, PathItemObject } from "openapi3-ts/oas31";
 import { isOperationObject } from "../core/isOperationObject";
 import { isVerb } from "../core/isVerb";
 
-export const forceReactQueryComponent = <OperationId extends string>({
+export const forceReactQueryComponent = <
+  OperationIdMatcher extends string | RegExp,
+>({
   openAPIDocument,
-  operationId,
+  operationIdMatcher,
   component,
 }: {
   /**
@@ -16,13 +18,13 @@ export const forceReactQueryComponent = <OperationId extends string>({
   /**
    * OperationId to force
    */
-  operationId: OperationId;
+  operationIdMatcher: OperationIdMatcher;
   /**
    * Component to use
    */
-  component: "useMutate" | "useQuery";
+  component: "useMutate" | "useQuery" | "useInfiniteQuery";
 }) => {
-  let extensionPath: string | undefined;
+  let extensionPaths: string[] = [];
 
   // Find the component
   openAPIDocument.paths &&
@@ -30,18 +32,29 @@ export const forceReactQueryComponent = <OperationId extends string>({
       ([route, verbs]: [string, PathItemObject]) => {
         Object.entries(verbs).forEach(([verb, operation]) => {
           if (!isVerb(verb) || !isOperationObject(operation)) return;
-          if (operation.operationId === operationId) {
-            extensionPath = `paths.${route}.${verb}.x-openapi-codegen-component`;
+          if (
+            operationIdMatcher instanceof RegExp
+              ? operationIdMatcher.test(operation.operationId)
+              : operation.operationId === operationIdMatcher
+          ) {
+            extensionPaths.push(
+              `paths.${route}.${verb}.x-openapi-codegen-component`,
+            );
           }
         });
       },
     );
 
-  if (!extensionPath) {
-    throw new Error(
-      `[forceReactQueryComponent] Operation with the operationId "${operationId}" not found`,
-    );
+  if (extensionPaths.length === 0) {
+    if (typeof operationIdMatcher === "string") {
+      throw new Error(
+        `[forceReactQueryComponent] Operation with the operationId "${operationIdMatcher}" not found`,
+      );
+    }
+    return openAPIDocument;
   }
 
-  return set(cloneDeep(openAPIDocument), extensionPath, component);
+  const newDoc = cloneDeep(openAPIDocument);
+  extensionPaths.map((extensionPath) => set(newDoc, extensionPath, component));
+  return newDoc;
 };

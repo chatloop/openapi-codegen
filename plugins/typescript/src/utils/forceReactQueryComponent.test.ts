@@ -6,7 +6,7 @@ describe("forceReactQueryComponent", () => {
     const updatedOpenAPIDocument = forceReactQueryComponent({
       openAPIDocument: petstore,
       component: "useMutate",
-      operationId: "findPets",
+      operationIdMatcher: "findPets",
     });
 
     expect(
@@ -18,7 +18,7 @@ describe("forceReactQueryComponent", () => {
       forceReactQueryComponent({
         openAPIDocument: petstore,
         component: "useMutate",
-        operationId: "notFound",
+        operationIdMatcher: "notFound",
       }),
     ).toThrow(
       `[forceReactQueryComponent] Operation with the operationId "notFound" not found`,
@@ -30,7 +30,7 @@ describe("forceReactQueryComponent", () => {
     forceReactQueryComponent({
       openAPIDocument: originalDocument,
       component: "useMutate",
-      operationId: "findPets",
+      operationIdMatcher: "findPets",
     });
 
     expect(

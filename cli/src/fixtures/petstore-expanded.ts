@@ -1,7 +1,7 @@
-import { OpenAPIObject } from "openapi3-ts";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 
 export const petstore: OpenAPIObject = {
-  openapi: "3.0.0",
+  openapi: "3.1.0",
   info: {
     version: "1.0.0",
     title: "Swagger Petstore",

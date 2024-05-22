@@ -75,8 +75,12 @@ export const generateReactQueryComponents = async (
   const filename = formatFilename(filenamePrefix + "-components");
 
   const fetcherFn = c.camel(`${filenamePrefix}-fetch`);
-  const contextTypeName = `${c.pascal(filenamePrefix)}Context`;
-  const contextHookName = `use${c.pascal(filenamePrefix)}Context`;
+  const queryContextTypeName = `${c.pascal(filenamePrefix)}Context`;
+  const infiniteQueryContextTypeName = `${c.pascal(filenamePrefix)}InfiniteContext`;
+
+  const queryContextHookName = `use${c.pascal(filenamePrefix)}QueryContext`;
+  const infiniteQueryContextHookName = `use${c.pascal(filenamePrefix)}InfiniteQueryContext`;
+
   const nodes: ts.Node[] = [];
   const keyManagerItems: ts.TypeLiteralNode[] = [];
 
@@ -102,21 +106,42 @@ export const generateReactQueryComponents = async (
     );
   }
 
-  // Generate `useQuery` & `useMutation`
   const operationIds: string[] = [];
+  const componentsUsed: {
+    useQuery: boolean;
+    useInfiniteQuery: boolean;
+    useMutate: boolean;
+  } = {
+    useQuery: false,
+    useInfiniteQuery: false,
+    useMutate: false,
+  };
 
   context.openAPIDocument.paths &&
     Object.entries(context.openAPIDocument.paths).forEach(
       ([route, verbs]: [string, PathItemObject]) => {
         Object.entries(verbs).forEach(([verb, operation]) => {
           if (!isVerb(verb) || !isOperationObject(operation)) return;
-          const operationId = c.camel(operation.operationId);
+          const operationId = operation.operationId;
           if (operationIds.includes(operationId)) {
             throw new Error(
               `The operationId "${operation.operationId}" is duplicated in your schema definition!`,
             );
           }
           operationIds.push(operationId);
+
+          const operationFetcherFnName = `fetch${c.pascal(operationId)}`;
+          const component: "useQuery" | "useMutate" | "useInfiniteQuery" =
+            operation["x-openapi-codegen-component"] ||
+            (verb === "get" ? "useQuery" : "useMutate");
+
+          if (
+            !["useQuery", "useMutate", "useInfiniteQuery"].includes(component)
+          ) {
+            throw new Error(`[x-openapi-codegen-component] Invalid value for ${operation.operationId} operation
+          Valid options: "useMutate", "useQuery", "useInfiniteQuery"`);
+          }
+          componentsUsed[component] = true;
 
           const {
             dataType,
@@ -136,7 +161,11 @@ export const generateReactQueryComponents = async (
             pathParameters: verbs.parameters,
             variablesExtraPropsType: f.createIndexedAccessTypeNode(
               f.createTypeReferenceNode(
-                f.createIdentifier(contextTypeName),
+                f.createIdentifier(
+                  component === "useInfiniteQuery"
+                    ? infiniteQueryContextTypeName
+                    : queryContextTypeName,
+                ),
                 undefined,
               ),
               f.createLiteralTypeNode(f.createStringLiteral("fetcherOptions")),
@@ -144,18 +173,6 @@ export const generateReactQueryComponents = async (
           });
 
           nodes.push(...declarationNodes);
-
-          const operationFetcherFnName = `fetch${c.pascal(operationId)}`;
-          const component: "useQuery" | "useMutate" | "useInfiniteQuery" =
-            operation["x-openapi-codegen-component"] ||
-            (verb === "get" ? "useQuery" : "useMutate");
-
-          if (
-            !["useQuery", "useMutate", "useInfiniteQuery"].includes(component)
-          ) {
-            throw new Error(`[x-openapi-codegen-component] Invalid value for ${operation.operationId} operation
-          Valid options: "useMutate", "useQuery", "useInfiniteQuery"`);
-          }
 
           if (component === "useQuery" || component === "useInfiniteQuery") {
             keyManagerItems.push(
@@ -185,6 +202,7 @@ export const generateReactQueryComponents = async (
           }
           let hook: ts.Node[];
 
+          // noinspection JSUnreachableSwitchBranches <-- phpstorm is confused :S
           switch (component) {
             case "useInfiniteQuery":
               hook = createInfiniteQueryHook({
@@ -193,7 +211,7 @@ export const generateReactQueryComponents = async (
                 dataType,
                 errorType,
                 variablesType,
-                contextHookName,
+                contextHookName: infiniteQueryContextHookName,
                 name: `use${c.pascal(operationId)}`,
                 operationId,
                 url: route,
@@ -206,7 +224,7 @@ export const generateReactQueryComponents = async (
                 dataType,
                 errorType,
                 variablesType,
-                contextHookName,
+                contextHookName: queryContextHookName,
                 name: `use${c.pascal(operationId)}`,
                 operationId,
                 url: route,
@@ -219,7 +237,7 @@ export const generateReactQueryComponents = async (
                 dataType,
                 errorType,
                 variablesType,
-                contextHookName,
+                contextHookName: queryContextHookName,
                 name: `use${c.pascal(operationId)}`,
               });
               break;
@@ -288,15 +306,132 @@ export const generateReactQueryComponents = async (
     await context.writeFile(`${utilsFilename}.ts`, getUtils());
   }
 
+  nodes.push(
+    f.createTypeAliasDeclaration(
+      [f.createModifier(ts.SyntaxKind.ExportKeyword)],
+      "UseQueryOptions",
+      [
+        f.createTypeParameterDeclaration(
+          undefined,
+          f.createIdentifier("TQueryFnData"),
+        ),
+        f.createTypeParameterDeclaration(
+          undefined,
+          f.createIdentifier("TError"),
+        ),
+        f.createTypeParameterDeclaration(
+          undefined,
+          f.createIdentifier("TData"),
+        ),
+      ],
+      f.createTypeReferenceNode(f.createIdentifier("Omit"), [
+        f.createTypeReferenceNode(
+          f.createQualifiedName(
+            f.createIdentifier("reactQuery"),
+            f.createIdentifier("UseQueryOptions"),
+          ),
+          [
+            f.createTypeReferenceNode(f.createIdentifier("TQueryFnData"), []),
+            f.createTypeReferenceNode(f.createIdentifier("TError"), []),
+            f.createTypeReferenceNode(f.createIdentifier("TData"), []),
+          ],
+        ),
+        f.createUnionTypeNode([
+          f.createLiteralTypeNode(f.createStringLiteral("queryKey")),
+          f.createLiteralTypeNode(f.createStringLiteral("queryFn")),
+        ]),
+      ]),
+    ),
+  );
+
+  nodes.push(
+    f.createTypeAliasDeclaration(
+      [f.createModifier(ts.SyntaxKind.ExportKeyword)],
+      "UseInfiniteQueryOptions",
+      [
+        f.createTypeParameterDeclaration(
+          undefined,
+          f.createIdentifier("TQueryFnData"),
+        ),
+        f.createTypeParameterDeclaration(
+          undefined,
+          f.createIdentifier("TError"),
+        ),
+        f.createTypeParameterDeclaration(
+          undefined,
+          f.createIdentifier("TData"),
+        ),
+      ],
+      f.createIntersectionTypeNode([
+        f.createTypeReferenceNode(f.createIdentifier("Omit"), [
+          f.createTypeReferenceNode(
+            f.createQualifiedName(
+              f.createIdentifier("reactQuery"),
+              f.createIdentifier("UseInfiniteQueryOptions"),
+            ),
+            [
+              f.createTypeReferenceNode(f.createIdentifier("TQueryFnData"), []),
+              f.createTypeReferenceNode(f.createIdentifier("TError"), []),
+              f.createTypeReferenceNode(f.createIdentifier("TData"), []),
+            ],
+          ),
+          f.createUnionTypeNode([
+            f.createLiteralTypeNode(f.createStringLiteral("queryKey")),
+            f.createLiteralTypeNode(f.createStringLiteral("queryFn")),
+            f.createLiteralTypeNode(f.createStringLiteral("getNextPageParam")),
+            f.createLiteralTypeNode(f.createStringLiteral("initialPageParam")),
+          ]),
+        ]),
+        f.createTypeReferenceNode(f.createIdentifier("Partial"), [
+          f.createTypeReferenceNode(f.createIdentifier("Pick"), [
+            f.createTypeReferenceNode(
+              f.createQualifiedName(
+                f.createIdentifier("reactQuery"),
+                f.createIdentifier("UseInfiniteQueryOptions"),
+              ),
+              [
+                f.createTypeReferenceNode(
+                  f.createIdentifier("TQueryFnData"),
+                  [],
+                ),
+                f.createTypeReferenceNode(f.createIdentifier("TError"), []),
+                f.createTypeReferenceNode(f.createIdentifier("TData"), []),
+              ],
+            ),
+            f.createUnionTypeNode([
+              f.createLiteralTypeNode(
+                f.createStringLiteral("getNextPageParam"),
+              ),
+              f.createLiteralTypeNode(
+                f.createStringLiteral("initialPageParam"),
+              ),
+            ]),
+          ]),
+        ]),
+      ]),
+    ),
+  );
+
+  const componentContextImports = [
+    ...(componentsUsed["useQuery"]
+      ? [queryContextHookName, queryContextTypeName]
+      : []),
+    ...(componentsUsed["useInfiniteQuery"]
+      ? [infiniteQueryContextHookName, infiniteQueryContextTypeName]
+      : []),
+  ];
+
+  const componentContextImportsNode: ts.Node[] =
+    componentContextImports.length > 0
+      ? [createNamedImport(componentContextImports, `./${contextFilename}`)]
+      : [];
+
   await context.writeFile(
     filename + ".ts",
     printNodes([
       createWatermark(context.openAPIDocument.info),
       createReactQueryImport(),
-      createNamedImport(
-        [contextHookName, contextTypeName],
-        `./${contextFilename}`,
-      ),
+      ...componentContextImportsNode,
       createNamespaceImport("Fetcher", `./${fetcherFilename}`),
       createNamedImport(fetcherFn, `./${fetcherFilename}`),
       ...usedImportsNodes,
@@ -518,7 +653,11 @@ const createQueryHook = ({
                   undefined,
                   f.createIdentifier("options"),
                   f.createToken(ts.SyntaxKind.QuestionToken),
-                  createUseQueryOptionsType(dataType, errorType),
+                  f.createTypeReferenceNode("UseQueryOptions", [
+                    dataType,
+                    errorType,
+                    f.createTypeReferenceNode("TData"),
+                  ]),
                 ),
               ],
               undefined,
@@ -599,6 +738,7 @@ const createQueryHook = ({
                                     f.createIdentifier("variables"),
                                   ),
                                 ]),
+                                f.createIdentifier("fetcherOptions"),
                               ],
                             ),
                           ),
@@ -709,7 +849,9 @@ const createInfiniteQueryHook = ({
                   undefined,
                   "TData",
                   undefined,
-                  dataType,
+                  f.createTypeReferenceNode("reactQuery.InfiniteData", [
+                    dataType,
+                  ]),
                 ),
               ],
               [
@@ -725,12 +867,42 @@ const createInfiniteQueryHook = ({
                   undefined,
                   f.createIdentifier("options"),
                   f.createToken(ts.SyntaxKind.QuestionToken),
-                  createUseQueryOptionsType(dataType, errorType),
+                  f.createTypeReferenceNode("UseInfiniteQueryOptions", [
+                    dataType,
+                    errorType,
+                    f.createTypeReferenceNode("TData"),
+                  ]),
                 ),
               ],
               undefined,
               f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
               f.createBlock([
+                f.createVariableStatement(
+                  undefined,
+                  f.createVariableDeclarationList(
+                    [
+                      f.createVariableDeclaration(
+                        "operation",
+                        undefined,
+                        f.createTypeReferenceNode("QueryOperation"),
+                        f.createObjectLiteralExpression([
+                          f.createPropertyAssignment(
+                            "path",
+                            f.createStringLiteral(camelizedPathParams(url)),
+                          ),
+                          f.createPropertyAssignment(
+                            "operationId",
+                            f.createStringLiteral(operationId),
+                          ),
+                          f.createShorthandPropertyAssignment(
+                            f.createIdentifier("variables"),
+                          ),
+                        ]),
+                      ),
+                    ],
+                    ts.NodeFlags.Const,
+                  ),
+                ),
                 f.createVariableStatement(
                   undefined,
                   f.createVariableDeclarationList(
@@ -755,13 +927,28 @@ const createInfiniteQueryHook = ({
                             f.createIdentifier("queryKeyFn"),
                             undefined,
                           ),
+                          f.createBindingElement(
+                            undefined,
+                            undefined,
+                            f.createIdentifier("paginateVariables"),
+                            undefined,
+                          ),
+                          f.createBindingElement(
+                            f.createToken(ts.SyntaxKind.DotDotDotToken),
+                            undefined,
+                            f.createIdentifier("paginationOptions"),
+                            undefined,
+                          ),
                         ]),
                         undefined,
                         undefined,
                         f.createCallExpression(
                           f.createIdentifier(contextHookName),
                           undefined,
-                          [f.createIdentifier("options")],
+                          [
+                            f.createIdentifier("operation"),
+                            f.createIdentifier("options"),
+                          ],
                         ),
                       ),
                     ],
@@ -791,21 +978,8 @@ const createInfiniteQueryHook = ({
                               f.createIdentifier("queryKeyFn"),
                               undefined,
                               [
-                                f.createObjectLiteralExpression([
-                                  f.createPropertyAssignment(
-                                    "path",
-                                    f.createStringLiteral(
-                                      camelizedPathParams(url),
-                                    ),
-                                  ),
-                                  f.createPropertyAssignment(
-                                    "operationId",
-                                    f.createStringLiteral(operationId),
-                                  ),
-                                  f.createShorthandPropertyAssignment(
-                                    f.createIdentifier("variables"),
-                                  ),
-                                ]),
+                                f.createIdentifier("operation"),
+                                f.createIdentifier("fetcherOptions"),
                               ],
                             ),
                           ),
@@ -824,6 +998,11 @@ const createInfiniteQueryHook = ({
                                       undefined,
                                       "signal",
                                     ),
+                                    f.createBindingElement(
+                                      undefined,
+                                      undefined,
+                                      "pageParam",
+                                    ),
                                   ]),
                                 ),
                               ],
@@ -835,21 +1014,40 @@ const createInfiniteQueryHook = ({
                                 f.createIdentifier(operationFetcherFnName),
                                 undefined,
                                 [
-                                  f.createObjectLiteralExpression(
+                                  f.createCallExpression(
+                                    f.createIdentifier("paginateVariables"),
+                                    undefined,
                                     [
-                                      f.createSpreadAssignment(
-                                        f.createIdentifier("fetcherOptions"),
+                                      f.createAsExpression(
+                                        f.createIdentifier("pageParam"),
+                                        f.createTypeQueryNode(
+                                          f.createIdentifier(
+                                            "paginationOptions.initialPageParam",
+                                          ),
+                                        ),
                                       ),
-                                      f.createSpreadAssignment(
-                                        f.createIdentifier("variables"),
+                                      f.createObjectLiteralExpression(
+                                        [
+                                          f.createSpreadAssignment(
+                                            f.createIdentifier(
+                                              "fetcherOptions",
+                                            ),
+                                          ),
+                                          f.createSpreadAssignment(
+                                            f.createIdentifier("variables"),
+                                          ),
+                                        ],
+                                        false,
                                       ),
                                     ],
-                                    false,
                                   ),
                                   f.createIdentifier("signal"),
                                 ],
                               ),
                             ),
+                          ),
+                          f.createSpreadAssignment(
+                            f.createIdentifier("paginationOptions"),
                           ),
                           f.createSpreadAssignment(
                             f.createIdentifier("options"),
@@ -874,29 +1072,6 @@ const createInfiniteQueryHook = ({
 
   return nodes;
 };
-
-const createUseQueryOptionsType = (
-  dataType: ts.TypeNode,
-  errorType: ts.TypeNode,
-) =>
-  f.createTypeReferenceNode(f.createIdentifier("Omit"), [
-    f.createTypeReferenceNode(
-      f.createQualifiedName(
-        f.createIdentifier("reactQuery"),
-        f.createIdentifier("UseQueryOptions"),
-      ),
-      [
-        dataType,
-        errorType,
-        f.createTypeReferenceNode(f.createIdentifier("TData"), []),
-      ],
-    ),
-    f.createUnionTypeNode([
-      f.createLiteralTypeNode(f.createStringLiteral("queryKey")),
-      f.createLiteralTypeNode(f.createStringLiteral("queryFn")),
-      f.createLiteralTypeNode(f.createStringLiteral("initialData")),
-    ]),
-  ]);
 
 const createReactQueryImport = () =>
   f.createImportDeclaration(

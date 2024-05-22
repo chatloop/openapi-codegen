@@ -278,7 +278,7 @@ describe("schemaToTypeAliasDeclaration", () => {
 
     expect(printSchema(schema)).toMatchInlineSnapshot(`
      "export type Test = {
-         ["foo.bar"]?: string;
+         "foo.bar"?: string;
      };"
     `);
   });
