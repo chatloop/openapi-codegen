@@ -1,5 +1,16 @@
 # Changelog
 
+## [9.0.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v8.0.2...openapi-codegen-typescript-v9.0.0) (2024-05-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* OpenApi 3.1 and Json:Api support ([#2](https://github.com/chatloop/openapi-codegen/issues/2))
+
+### Features
+
+* OpenApi 3.1 and Json:Api support ([#2](https://github.com/chatloop/openapi-codegen/issues/2)) ([1e07b52](https://github.com/chatloop/openapi-codegen/commit/1e07b5280414e926936bcc8d966fb4a4237c0974))
+
 ## [8.0.2](https://github.com/fabien0102/openapi-codegen/compare/typescript-v8.0.1...typescript-v8.0.2) (2024-04-29)
 
 

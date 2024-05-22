@@ -1,5 +1,21 @@
 # Changelog
 
+## [3.0.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-cli-v2.0.2...openapi-codegen-cli-v3.0.0) (2024-05-22)
+
+
+### ⚠ BREAKING CHANGES
+
+* OpenApi 3.1 and Json:Api support ([#2](https://github.com/chatloop/openapi-codegen/issues/2))
+
+### Features
+
+* OpenApi 3.1 and Json:Api support ([#2](https://github.com/chatloop/openapi-codegen/issues/2)) ([1e07b52](https://github.com/chatloop/openapi-codegen/commit/1e07b5280414e926936bcc8d966fb4a4237c0974))
+
+
+### Bug Fixes
+
+* Changed Read API Method for Github from Graphql API to Rest API ([#253](https://github.com/chatloop/openapi-codegen/issues/253)) ([a1abe62](https://github.com/chatloop/openapi-codegen/commit/a1abe62f70910d1b418aa1a75cc317fac926b857))
+
 ## [2.0.2](https://github.com/fabien0102/openapi-codegen/compare/cli-v2.0.1...cli-v2.0.2) (2024-04-29)
 
 
