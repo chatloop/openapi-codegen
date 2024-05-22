@@ -27,9 +27,9 @@ describe("schemaToTypeAliasDeclaration", () => {
 
     expect(printSchema(schema)).toMatchInlineSnapshot(`
      "export enum Test {
-         "1" = "1",
-         "1.0" = "1.0",
-         "1.1.1" = "1.1.1"
+         "_1" = "1",
+         "_1.0" = "1.0",
+         "_1.1.1" = "1.1.1"
      }"
     `);
   });
