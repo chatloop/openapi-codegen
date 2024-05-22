@@ -19,7 +19,7 @@ describe("schemaToTypeAliasDeclaration", () => {
     `);
   });
 
-  it("should convert strink values to valid enum keys", () => {
+  it("should quote string values starting with a digit", () => {
     const schema: SchemaObject = {
       type: "string",
       enum: ["1", "1.0", "1.1.1"],
@@ -27,9 +27,9 @@ describe("schemaToTypeAliasDeclaration", () => {
 
     expect(printSchema(schema)).toMatchInlineSnapshot(`
      "export enum Test {
-         _1 = "1",
-         _1_0 = "1.0",
-         _1_1_1 = "1.1.1"
+         "1" = "1",
+         "1.0" = "1.0",
+         "1.1.1" = "1.1.1"
      }"
     `);
   });

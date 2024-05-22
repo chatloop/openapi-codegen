@@ -47,9 +47,7 @@ function getEnumMembers(
       }
 
       if (typeof enumValue === "string") {
-        enumName = (
-          enumValue.match(/^\d/g) ? `_${enumValue}` : enumValue
-        ).replace(/\./g, "_");
+        enumName = enumValue.match(/^\d/) ? `"${enumValue}"` : enumValue;
         enumValueNode = f.createStringLiteral(enumValue);
       } else if (typeof enumValue === "number") {
         enumName = convertNumberToWord(enumValue)
