@@ -1,5 +1,5 @@
 import { pascal } from "case";
-import { SchemaObject } from "openapi3-ts";
+import { SchemaObject } from "openapi3-ts/oas31";
 import ts, { factory as f } from "typescript";
 import { convertNumberToWord } from "../utils/getEnumProperties";
 import { Context, getJSDocComment } from "./schemaToTypeAliasDeclaration";
@@ -14,14 +14,14 @@ import { Context, getJSDocComment } from "./schemaToTypeAliasDeclaration";
 export const schemaToEnumDeclaration = (
   name: string,
   schema: SchemaObject,
-  context: Context
+  context: Context,
 ): ts.Node[] => {
   const jsDocNode = getJSDocComment(schema, context);
   const members = getEnumMembers(schema, context);
   const declarationNode = f.createEnumDeclaration(
     [f.createModifier(ts.SyntaxKind.ExportKeyword)],
     pascal(name),
-    members
+    members,
   );
 
   return jsDocNode ? [jsDocNode, declarationNode] : [declarationNode];
@@ -29,32 +29,38 @@ export const schemaToEnumDeclaration = (
 
 function getEnumMembers(
   schema: SchemaObject,
-  context: Context
+  context: Context,
 ): ts.EnumMember[] {
   if (!schema.enum || !Array.isArray(schema.enum)) {
     throw new Error(
-      "The provided schema does not have an 'enum' property or it is not an array."
+      "The provided schema does not have an 'enum' property or it is not an array.",
     );
   }
 
-  return schema.enum.map((enumValue, index) => {
-    let enumName: string;
-    let enumValueNode: ts.Expression | undefined = undefined;
+  return schema.enum
+    .map((enumValue, index) => {
+      let enumName: string;
+      let enumValueNode: ts.Expression | undefined = undefined;
 
-    if (typeof enumValue === "string") {
-      enumName = enumValue;
-      enumValueNode = f.createStringLiteral(enumValue);
-    } else if (typeof enumValue === "number") {
-      enumName = convertNumberToWord(enumValue)
-        .toUpperCase()
-        .replace(/[-\s]/g, "_");
-      enumValueNode = f.createNumericLiteral(enumValue);
-    } else if (typeof enumValue === "boolean") {
-      enumName = enumValue ? "True" : "False";
-    } else {
-      throw new Error(`Unsupported enum value type: ${typeof enumValue}`);
-    }
+      if (enumValue === null) {
+        return null;
+      }
 
-    return f.createEnumMember(f.createIdentifier(enumName), enumValueNode);
-  });
+      if (typeof enumValue === "string") {
+        enumName = enumValue.match(/^\d/) ? `"${enumValue}"` : enumValue;
+        enumValueNode = f.createStringLiteral(enumValue);
+      } else if (typeof enumValue === "number") {
+        enumName = convertNumberToWord(enumValue)
+          .toUpperCase()
+          .replace(/[-\s]/g, "_");
+        enumValueNode = f.createNumericLiteral(enumValue);
+      } else if (typeof enumValue === "boolean") {
+        enumName = enumValue ? "True" : "False";
+      } else {
+        throw new Error(`Unsupported enum value type: ${typeof enumValue}`);
+      }
+
+      return f.createEnumMember(f.createIdentifier(enumName), enumValueNode);
+    })
+    .filter((member): member is ts.EnumMember => member !== null);
 }

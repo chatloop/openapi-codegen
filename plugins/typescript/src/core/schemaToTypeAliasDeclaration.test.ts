@@ -1,4 +1,8 @@
-import { OpenAPIObject, ReferenceObject, SchemaObject } from "openapi3-ts";
+import {
+  OpenAPIObject,
+  ReferenceObject,
+  SchemaObject,
+} from "openapi3-ts/oas31";
 import ts from "typescript";
 import {
   OpenAPIComponentType,
@@ -40,11 +44,18 @@ describe("schemaToTypeAliasDeclaration", () => {
 
   it("should generate a nullable value", () => {
     const schema: SchemaObject = {
-      type: "integer",
-      nullable: true,
+      type: ["integer", "null"],
     };
 
     expect(printSchema(schema)).toBe("export type Test = number | null;");
+  });
+
+  it("should generate a union value when type is an array", () => {
+    const schema: SchemaObject = {
+      type: ["integer", "string"],
+    };
+
+    expect(printSchema(schema)).toBe("export type Test = number | string;");
   });
 
   it("should generate an array of numbers", () => {
@@ -97,9 +108,8 @@ describe("schemaToTypeAliasDeclaration", () => {
 
   it("should generate nullable enums (strings)", () => {
     const schema: SchemaObject = {
-      type: "string",
-      enum: ["foo", "bar", "baz"],
-      nullable: true,
+      type: ["string", "null"],
+      enum: ["foo", "bar", "baz", null],
     };
 
     expect(printSchema(schema)).toBe(
@@ -159,8 +169,8 @@ describe("schemaToTypeAliasDeclaration", () => {
       default: "42",
       format: "int32",
       deprecated: true,
-      exclusiveMaximum: true,
-      exclusiveMinimum: false,
+      exclusiveMaximum: 43,
+      exclusiveMinimum: 42,
       example: "I’m an example",
       "x-test": "plop",
     };
@@ -174,8 +184,8 @@ describe("schemaToTypeAliasDeclaration", () => {
        * @default 42
        * @format int32
        * @deprecated true
-       * @exclusiveMaximum true
-       * @exclusiveMinimum false
+       * @exclusiveMaximum 43
+       * @exclusiveMinimum 42
        * @example I’m an example
        * @x-test plop
        */
@@ -268,7 +278,7 @@ describe("schemaToTypeAliasDeclaration", () => {
 
     expect(printSchema(schema)).toMatchInlineSnapshot(`
      "export type Test = {
-         ["foo.bar"]?: string;
+         "foo.bar"?: string;
      };"
     `);
   });
@@ -849,7 +859,6 @@ describe("schemaToTypeAliasDeclaration", () => {
             required: ["files"],
           },
         ],
-        nullable: true,
         properties: {
           description: {
             description: "Description of the gist",
@@ -869,8 +878,10 @@ describe("schemaToTypeAliasDeclaration", () => {
                   maxProperties: 0,
                   type: "object",
                 },
+                {
+                  type: "null",
+                },
               ],
-              nullable: true,
               properties: {
                 content: {
                   description: "The new content of the file",
@@ -878,8 +889,7 @@ describe("schemaToTypeAliasDeclaration", () => {
                 },
                 filename: {
                   description: "The new filename for the file",
-                  nullable: true,
-                  type: "string",
+                  type: ["string", "null"],
                 },
               },
               type: "object",
@@ -894,11 +904,11 @@ describe("schemaToTypeAliasDeclaration", () => {
             type: "object",
           },
         },
-        type: "object",
+        type: ["object", "null"],
       };
 
       expect(printSchema(schema)).toMatchInlineSnapshot(`
-       "export type Test = {
+       "export type Test = ({
            /**
             * Description of the gist
             *
@@ -931,7 +941,7 @@ describe("schemaToTypeAliasDeclaration", () => {
                    filename: string | null;
                } | {} | null;
            };
-       } | {
+       } | null) | ({
            /**
             * Description of the gist
             *
@@ -964,14 +974,14 @@ describe("schemaToTypeAliasDeclaration", () => {
                    filename: string | null;
                } | {} | null;
            };
-       } | null;"
+       } | null);"
       `);
     });
   });
 });
 
 const printSchema = (
-  schema: SchemaObject,
+  schema: SchemaObject | ReferenceObject,
   currentComponent: OpenAPIComponentType = "schemas",
   components?: OpenAPIObject["components"],
   useEnums?: boolean,

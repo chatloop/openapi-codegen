@@ -1,5 +1,5 @@
 {
-  "name": "@openapi-codegen/cli",
+  "name": "@chatloop/openapi-codegen-cli",
   "version": "2.0.2",
   "description": "OpenAPI Codegen cli",
   "main": "lib/index.js",
@@ -9,7 +9,7 @@
     "openapi-codegen": "lib/cli.js"
   },
   "repository": {
-    "url": "https://github.com/fabien0102/openapi-codegen",
+    "url": "https://github.com/chatloop/openapi-codegen",
     "directory": "cli"
   },
   "publishConfig": {

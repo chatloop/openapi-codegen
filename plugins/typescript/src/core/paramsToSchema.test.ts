@@ -1,4 +1,4 @@
-import { ParameterObject } from "openapi3-ts";
+import { ParameterObject } from "openapi3-ts/oas31";
 import { paramsToSchema } from "./paramsToSchema";
 
 describe("paramsToSchema", () => {

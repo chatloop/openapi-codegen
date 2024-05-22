@@ -1,4 +1,4 @@
-import { OpenAPIObject, SchemaObject } from "openapi3-ts";
+import { OpenAPIObject, SchemaObject } from "openapi3-ts/oas31";
 import ts from "typescript";
 import { schemaToEnumDeclaration } from "./schemaToEnumDeclaration";
 import { OpenAPIComponentType } from "./schemaToTypeAliasDeclaration";
@@ -15,6 +15,21 @@ describe("schemaToTypeAliasDeclaration", () => {
          AVAILABLE = "AVAILABLE",
          PENDING = "PENDING",
          SOLD = "SOLD"
+     }"
+    `);
+  });
+
+  it("should quote string values starting with a digit", () => {
+    const schema: SchemaObject = {
+      type: "string",
+      enum: ["1", "1.0", "1.1.1"],
+    };
+
+    expect(printSchema(schema)).toMatchInlineSnapshot(`
+     "export enum Test {
+         "1" = "1",
+         "1.0" = "1.0",
+         "1.1.1" = "1.1.1"
      }"
     `);
   });

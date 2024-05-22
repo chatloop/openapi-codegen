@@ -1,6 +1,7 @@
 // Generators
 export { generateSchemaTypes } from "./generators/generateSchemaTypes";
 export { generateReactQueryComponents } from "./generators/generateReactQueryComponents";
+export { generateJsonApiReactQueryComponents } from "./generators/generateJsonApiReactQueryComponents";
 export { generateReactQueryFunctions } from "./generators/generateReactQueryFunctions";
 export { generateFetchers } from "./generators/generateFetchers";
 

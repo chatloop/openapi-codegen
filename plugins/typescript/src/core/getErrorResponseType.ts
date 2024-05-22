@@ -5,7 +5,7 @@ import {
   ReferenceObject,
   ResponseObject,
   ResponsesObject,
-} from "openapi3-ts";
+} from "openapi3-ts/oas31";
 
 import { findCompatibleMediaType } from "./findCompatibleMediaType";
 import { getType } from "./schemaToTypeAliasDeclaration";
@@ -22,28 +22,31 @@ export const getErrorResponseType = ({
   components,
   printNodes,
 }: {
-  responses: ResponsesObject;
+  responses?: ResponsesObject;
   components?: ComponentsObject;
   printNodes: (nodes: ts.Node[]) => string;
 }) => {
+  if (responses === undefined) {
+    return f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword);
+  }
   const status = Object.keys(responses);
 
   const responseTypes = Object.entries(responses).reduce(
     (
       mem,
-      [statusCode, response]: [string, ResponseObject | ReferenceObject]
+      [statusCode, response]: [string, ResponseObject | ReferenceObject],
     ) => {
       if (statusCode.startsWith("2")) return mem;
       if (isReferenceObject(response)) {
         const [hash, topLevel, namespace, name] = response.$ref.split("/");
         if (hash !== "#" || topLevel !== "components") {
           throw new Error(
-            "This library only resolve $ref that are include into `#/components/*` for now"
+            "This library only resolve $ref that are include into `#/components/*` for now",
           );
         }
         if (namespace !== "responses") {
           throw new Error(
-            "$ref for responses must be on `#/components/responses`"
+            "$ref for responses must be on `#/components/responses`",
           );
         }
         return [
@@ -53,11 +56,11 @@ export const getErrorResponseType = ({
             f.createTypeReferenceNode(
               f.createQualifiedName(
                 f.createIdentifier("Responses"),
-                f.createIdentifier(pascal(name))
+                f.createIdentifier(pascal(name)),
               ),
-              undefined
+              undefined,
             ),
-            status
+            status,
           ),
         ];
       }
@@ -73,37 +76,39 @@ export const getErrorResponseType = ({
             currentComponent: null,
             openAPIDocument: { components },
           }),
-          status
+          status,
         ),
       ];
     },
-    [] as ts.TypeNode[]
+    [] as ts.TypeNode[],
   );
 
   return f.createTypeReferenceNode("Fetcher.ErrorWrapper", [
     responseTypes.length === 0
       ? f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
       : responseTypes.length === 1
-      ? responseTypes[0]
-      : f.createUnionTypeNode(responseTypes),
+        ? responseTypes[0]
+        : f.createUnionTypeNode(responseTypes),
   ]);
 };
 
 const createStatusDeclaration = (
   statusCode: string,
   type: ts.TypeNode,
-  status: string[]
+  status: string[],
 ): ts.TypeNode => {
   let statusType: ts.TypeNode = f.createLiteralTypeNode(
-    f.createNumericLiteral(statusCode)
+    f.createNumericLiteral(statusCode),
   );
 
   if (
     statusCode === "4xx" ||
-    (statusCode === "default" && status.includes("5xx"))
+    statusCode === "4XX" ||
+    (statusCode === "default" &&
+      (status.includes("5xx") || status.includes("5XX")))
   ) {
     const usedClientCode = status.filter(
-      (s) => s.startsWith("4") && s !== "4xx"
+      (s) => s.startsWith("4") && s !== "4xx" && s !== "4XX",
     );
     if (usedClientCode.length > 0) {
       statusType = f.createTypeReferenceNode("Exclude", [
@@ -112,8 +117,8 @@ const createStatusDeclaration = (
           ? f.createLiteralTypeNode(f.createNumericLiteral(usedClientCode[0]))
           : f.createUnionTypeNode(
               usedClientCode.map((code) =>
-                f.createLiteralTypeNode(f.createNumericLiteral(code))
-              )
+                f.createLiteralTypeNode(f.createNumericLiteral(code)),
+              ),
             ),
       ]);
     } else {
@@ -123,10 +128,12 @@ const createStatusDeclaration = (
 
   if (
     statusCode === "5xx" ||
-    (statusCode === "default" && status.includes("4xx"))
+    statusCode === "5XX" ||
+    (statusCode === "default" &&
+      (status.includes("4xx") || status.includes("4XX")))
   ) {
     const usedServerCode = status.filter(
-      (s) => s.startsWith("5") && s !== "5xx"
+      (s) => s.startsWith("5") && s !== "5xx" && s !== "5XX",
     );
     if (usedServerCode.length > 0) {
       statusType = f.createTypeReferenceNode("Exclude", [
@@ -135,8 +142,8 @@ const createStatusDeclaration = (
           ? f.createLiteralTypeNode(f.createNumericLiteral(usedServerCode[0]))
           : f.createUnionTypeNode(
               usedServerCode.map((code) =>
-                f.createLiteralTypeNode(f.createNumericLiteral(code))
-              )
+                f.createLiteralTypeNode(f.createNumericLiteral(code)),
+              ),
             ),
       ]);
     } else {
@@ -147,7 +154,9 @@ const createStatusDeclaration = (
   if (
     statusCode === "default" &&
     !status.includes("4xx") &&
-    !status.includes("5xx")
+    !status.includes("4XX") &&
+    !status.includes("5xx") &&
+    !status.includes("5XX")
   ) {
     const otherCodes = status.filter((s) => s !== "default");
     if (otherCodes.length > 0) {
@@ -160,8 +169,8 @@ const createStatusDeclaration = (
           ? f.createLiteralTypeNode(f.createNumericLiteral(otherCodes[0]))
           : f.createUnionTypeNode(
               otherCodes.map((code) =>
-                f.createLiteralTypeNode(f.createNumericLiteral(code))
-              )
+                f.createLiteralTypeNode(f.createNumericLiteral(code)),
+              ),
             ),
       ]);
     } else {
@@ -174,8 +183,8 @@ const createStatusDeclaration = (
 
   if (
     statusCode === "default" &&
-    status.includes("4xx") &&
-    status.includes("5xx")
+    (status.includes("4xx") || status.includes("4XX")) &&
+    (status.includes("5xx") || status.includes("5XX"))
   ) {
     statusType = f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword);
   }

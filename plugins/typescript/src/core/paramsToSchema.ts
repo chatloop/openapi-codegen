@@ -1,5 +1,5 @@
 import { camel } from "case";
-import { ParameterObject, SchemaObject } from "openapi3-ts";
+import { ParameterObject, SchemaObject } from "openapi3-ts/oas31";
 
 /**
  * Convert a list of params in an object schema.
@@ -10,7 +10,7 @@ import { ParameterObject, SchemaObject } from "openapi3-ts";
  */
 export const paramsToSchema = (
   params: ParameterObject[],
-  optionalKeys: string[] = []
+  optionalKeys: string[] = [],
 ): SchemaObject => {
   const formatKey = params[0].in === "path" ? camel : (key: string) => key;
   return {

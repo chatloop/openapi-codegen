@@ -18,14 +18,14 @@ export const getUsedImports = (
     schemas: string;
     parameters: string;
     responses: string;
-    utils: string;
-  }
+    utils?: string;
+  },
 ): { keys: string[]; nodes: ts.Node[] } => {
-  const imports: Record<
-    keyof typeof files,
-    | { type: "namespace"; used: boolean; namespace: string; from: string }
-    | { type: "named"; used: boolean; imports: Set<string>; from: string }
-  > = {
+  const imports: {
+    [key in keyof typeof files]:
+      | { type: "namespace"; used: boolean; namespace: string; from: string }
+      | { type: "named"; used: boolean; imports: Set<string>; from: string };
+  } = {
     parameters: {
       type: "namespace",
       used: false,
@@ -50,30 +50,33 @@ export const getUsedImports = (
       namespace: "Responses",
       from: files.responses,
     },
-    utils: {
+  };
+  if (files.utils) {
+    imports["utils"] = {
       type: "named",
       used: false,
       from: files.utils,
       imports: new Set(),
-    },
-  };
-
+    };
+  }
   const visitor: ts.Visitor = (node) => {
     if (ts.isQualifiedName(node)) {
       // We can’t use `node.left.getText()` because the node is not compiled (no internal `text` property)
       const text = camel(get(node.left, "escapedText", "") as string);
       if (text in imports) {
-        imports[text as keyof typeof imports].used = true;
+        imports[text as keyof typeof imports]!.used = true;
       }
     }
-    if (imports.utils.type === "named" && ts.isTypeReferenceNode(node)) {
-      if (get(node.typeName, "escapedText", "") === clientErrorStatus) {
-        imports.utils.used = true;
-        imports.utils.imports.add(clientErrorStatus);
-      }
-      if (get(node.typeName, "escapedText", "") === serverErrorStatus) {
-        imports.utils.used = true;
-        imports.utils.imports.add(serverErrorStatus);
+    if (imports.utils) {
+      if (imports.utils.type === "named" && ts.isTypeReferenceNode(node)) {
+        if (get(node.typeName, "escapedText", "") === clientErrorStatus) {
+          imports.utils.used = true;
+          imports.utils.imports.add(clientErrorStatus);
+        }
+        if (get(node.typeName, "escapedText", "") === serverErrorStatus) {
+          imports.utils.used = true;
+          imports.utils.imports.add(serverErrorStatus);
+        }
       }
     }
     return node.forEachChild(visitor);
@@ -89,7 +92,11 @@ export const getUsedImports = (
       if (i.type === "namespace") {
         return createNamespaceImport(i.namespace, `./${i.from}`);
       } else {
-        return createNamedImport(Array.from(i.imports.values()), `./${i.from}`, true);
+        return createNamedImport(
+          Array.from(i.imports.values()),
+          `./${i.from}`,
+          true,
+        );
       }
     }),
   };

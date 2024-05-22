@@ -5,7 +5,7 @@ import {
   ReferenceObject,
   ResponseObject,
   ResponsesObject,
-} from "openapi3-ts";
+} from "openapi3-ts/oas31";
 import { uniqBy } from "lodash";
 import { pascal } from "case";
 
@@ -20,27 +20,30 @@ export const getDataResponseType = ({
   components,
   printNodes,
 }: {
-  responses: ResponsesObject;
+  responses?: ResponsesObject;
   components?: ComponentsObject;
   printNodes: (nodes: ts.Node[]) => string;
 }) => {
+  if (responses === undefined) {
+    return f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword);
+  }
   const responseTypes = uniqBy(
     Object.entries(responses).reduce(
       (
         mem,
-        [statusCode, response]: [string, ResponseObject | ReferenceObject]
+        [statusCode, response]: [string, ResponseObject | ReferenceObject],
       ) => {
         if (!statusCode.startsWith("2")) return mem;
         if (isReferenceObject(response)) {
           const [hash, topLevel, namespace, name] = response.$ref.split("/");
           if (hash !== "#" || topLevel !== "components") {
             throw new Error(
-              "This library only resolve $ref that are include into `#/components/*` for now"
+              "This library only resolve $ref that are include into `#/components/*` for now",
             );
           }
           if (namespace !== "responses") {
             throw new Error(
-              "$ref for responses must be on `#/components/responses`"
+              "$ref for responses must be on `#/components/responses`",
             );
           }
           return [
@@ -48,9 +51,9 @@ export const getDataResponseType = ({
             f.createTypeReferenceNode(
               f.createQualifiedName(
                 f.createIdentifier("Responses"),
-                f.createIdentifier(pascal(name))
+                f.createIdentifier(pascal(name)),
               ),
-              undefined
+              undefined,
             ),
           ];
         }
@@ -66,14 +69,14 @@ export const getDataResponseType = ({
           }),
         ];
       },
-      [] as ts.TypeNode[]
+      [] as ts.TypeNode[],
     ),
-    (node) => printNodes([node])
+    (node) => printNodes([node]),
   );
 
   return responseTypes.length === 0
     ? f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
     : responseTypes.length === 1
-    ? responseTypes[0]
-    : f.createUnionTypeNode(responseTypes);
+      ? responseTypes[0]
+      : f.createUnionTypeNode(responseTypes);
 };

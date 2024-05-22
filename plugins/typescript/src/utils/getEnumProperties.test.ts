@@ -1,4 +1,4 @@
-import { SchemaObject } from "openapi3-ts";
+import { SchemaObject } from "openapi3-ts/oas31";
 import { convertNumberToWord, getEnumProperties } from "./getEnumProperties";
 
 describe("getEnumProperties", () => {

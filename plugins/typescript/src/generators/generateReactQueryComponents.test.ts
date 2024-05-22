@@ -1,4 +1,4 @@
-import { OpenAPIObject } from "openapi3-ts";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import {
   Config,
   generateReactQueryComponents,
@@ -90,7 +90,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
+     import { usePetstoreQueryContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as Schemas from "./petstoreSchemas";
@@ -109,12 +109,16 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: Omit<reactQuery.UseQueryOptions<ListPetsResponse, ListPetsError, TData>, "queryKey" | "queryFn" | "initialData">) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
      }); };
+
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: "/pets";
@@ -201,7 +205,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
+     import { usePetstoreQueryContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as Schemas from "./petstoreSchemas";
@@ -233,12 +237,16 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: Omit<reactQuery.UseQueryOptions<ListPetsResponse, ListPetsError, TData>, "queryKey" | "queryFn" | "initialData">) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
      }); };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: "/pets";
@@ -311,7 +319,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
+     import { usePetstoreQueryContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as Schemas from "./petstoreSchemas";
@@ -339,12 +347,16 @@ describe("generateReactQueryComponents", () => {
      /**
       * Info for a specific pet
       */
-     export const useShowPetById = <TData = ShowPetByIdResponse>(variables: ShowPetByIdVariables, options?: Omit<reactQuery.UseQueryOptions<ShowPetByIdResponse, ShowPetByIdError, TData>, "queryKey" | "queryFn" | "initialData">) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreContext(options); return reactQuery.useQuery<ShowPetByIdResponse, ShowPetByIdError, TData>({
-         queryKey: queryKeyFn({ path: "/pets/{petId}", operationId: "showPetById", variables }),
+     export const useShowPetById = <TData = ShowPetByIdResponse>(variables: ShowPetByIdVariables, options?: UseQueryOptions<ShowPetByIdResponse, ShowPetByIdError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ShowPetByIdResponse, ShowPetByIdError, TData>({
+         queryKey: queryKeyFn({ path: "/pets/{petId}", operationId: "showPetById", variables }, fetcherOptions),
          queryFn: ({ signal }) => fetchShowPetById({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
      }); };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: "/pets/{petId}";
@@ -431,7 +443,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
+     import { usePetstoreQueryContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as Schemas from "./petstoreSchemas";
@@ -467,12 +479,16 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: Omit<reactQuery.UseQueryOptions<ListPetsResponse, ListPetsError, TData>, "queryKey" | "queryFn" | "initialData">) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
      }); };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: "/pets";
@@ -547,7 +563,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
+     import { usePetstoreQueryContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as Schemas from "./petstoreSchemas";
@@ -566,12 +582,16 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: Omit<reactQuery.UseQueryOptions<ListPetsResponse, ListPetsError, TData>, "queryKey" | "queryFn" | "initialData">) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
      }); };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: "/pets";
@@ -673,7 +693,6 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
 
@@ -699,12 +718,16 @@ describe("generateReactQueryComponents", () => {
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, AddPetRequestBody, {}, {}, {}>({ url: "/pet", method: "post", ...variables, signal });
 
      export const useAddPet = (options?: Omit<reactQuery.UseMutationOptions<string, AddPetError, AddPetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreContext();
+         const { fetcherOptions } = usePetstoreQueryContext();
          return reactQuery.useMutation<string, AddPetError, AddPetVariables>({
              mutationFn: (variables: AddPetVariables) => fetchAddPet({ ...fetcherOptions, ...variables }),
              ...options
          });
      };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: string;
@@ -807,7 +830,6 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
 
@@ -833,12 +855,16 @@ describe("generateReactQueryComponents", () => {
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, AddPetRequestBody, {}, {}, {}>({ url: "/pet", method: "get", ...variables, signal });
 
      export const useAddPet = (options?: Omit<reactQuery.UseMutationOptions<string, AddPetError, AddPetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreContext();
+         const { fetcherOptions } = usePetstoreQueryContext();
          return reactQuery.useMutation<string, AddPetError, AddPetVariables>({
              mutationFn: (variables: AddPetVariables) => fetchAddPet({ ...fetcherOptions, ...variables }),
              ...options
          });
      };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: string;
@@ -947,7 +973,6 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -967,12 +992,16 @@ describe("generateReactQueryComponents", () => {
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, RequestBodies.Dog, {}, {}, {}>({ url: "/pet", method: "post", ...variables, signal });
 
      export const useAddPet = (options?: Omit<reactQuery.UseMutationOptions<string, AddPetError, AddPetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreContext();
+         const { fetcherOptions } = usePetstoreQueryContext();
          return reactQuery.useMutation<string, AddPetError, AddPetVariables>({
              mutationFn: (variables: AddPetVariables) => fetchAddPet({ ...fetcherOptions, ...variables }),
              ...options
          });
      };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: string;
@@ -1060,7 +1089,6 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1079,12 +1107,16 @@ describe("generateReactQueryComponents", () => {
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
      export const useUpdatePet = (options?: Omit<reactQuery.UseMutationOptions<string, UpdatePetError, UpdatePetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreContext();
+         const { fetcherOptions } = usePetstoreQueryContext();
          return reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
              mutationFn: (variables: UpdatePetVariables) => fetchUpdatePet({ ...fetcherOptions, ...variables }),
              ...options
          });
      };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: string;
@@ -1172,7 +1204,6 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1191,12 +1222,16 @@ describe("generateReactQueryComponents", () => {
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
      export const useUpdatePet = (options?: Omit<reactQuery.UseMutationOptions<string, UpdatePetError, UpdatePetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreContext();
+         const { fetcherOptions } = usePetstoreQueryContext();
          return reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
              mutationFn: (variables: UpdatePetVariables) => fetchUpdatePet({ ...fetcherOptions, ...variables }),
              ...options
          });
      };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: string;
@@ -1284,7 +1319,6 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1303,12 +1337,16 @@ describe("generateReactQueryComponents", () => {
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
      export const useUpdatePet = (options?: Omit<reactQuery.UseMutationOptions<string, UpdatePetError, UpdatePetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreContext();
+         const { fetcherOptions } = usePetstoreQueryContext();
          return reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
              mutationFn: (variables: UpdatePetVariables) => fetchUpdatePet({ ...fetcherOptions, ...variables }),
              ...options
          });
      };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: string;
@@ -1396,7 +1434,6 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { useContext, Context } from "./context";
      import type * as Fetcher from "./fetcher";
      import { fetch } from "./fetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1415,12 +1452,16 @@ describe("generateReactQueryComponents", () => {
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => fetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
      export const useUpdatePet = (options?: Omit<reactQuery.UseMutationOptions<string, UpdatePetError, UpdatePetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = useContext();
+         const { fetcherOptions } = useQueryContext();
          return reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
              mutationFn: (variables: UpdatePetVariables) => fetchUpdatePet({ ...fetcherOptions, ...variables }),
              ...options
          });
      };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: string;
@@ -1492,7 +1533,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreContext, PetstoreContext } from "./petstoreContext";
+     import { usePetstoreQueryContext, PetstoreContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as Schemas from "./petstoreSchemas";
@@ -1515,12 +1556,16 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: Omit<reactQuery.UseQueryOptions<ListPetsResponse, ListPetsError, TData>, "queryKey" | "queryFn" | "initialData">) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
      }); };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
      export type QueryOperation = {
          path: "/pets";
@@ -1530,4 +1575,95 @@ describe("generateReactQueryComponents", () => {
      "
     `);
   });
+});
+it("should generate a useInfiniteQuery wrapper (no parameters)", async () => {
+  const writeFile = jest.fn();
+  const openAPIDocument: OpenAPIObject = {
+    openapi: "3.0.0",
+    info: {
+      title: "petshop",
+      version: "1.0.0",
+    },
+    paths: {
+      "/pets": {
+        get: {
+          operationId: "listPets",
+          description: "Get all the pets",
+          "x-openapi-codegen-component": "useInfiniteQuery",
+          responses: {
+            "200": {
+              description: "pet response",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "array",
+                    items: {
+                      $ref: "#/components/schemas/Pet",
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+  };
+
+  await generateReactQueryComponents(
+    {
+      openAPIDocument,
+      writeFile,
+      existsFile: () => true,
+      readFile: async () => "",
+    },
+    config,
+  );
+
+  expect(writeFile.mock.calls[0][0]).toBe("petstoreComponents.ts");
+  expect(writeFile.mock.calls[0][1]).toMatchInlineSnapshot(`
+     "/**
+      * Generated by @openapi-codegen
+      * 
+      * @version 1.0.0
+      */
+     import * as reactQuery from "@tanstack/react-query";
+     import { usePetstoreInfiniteQueryContext, PetstoreInfiniteContext } from "./petstoreContext";
+     import type * as Fetcher from "./petstoreFetcher";
+     import { petstoreFetch } from "./petstoreFetcher";
+     import type * as Schemas from "./petstoreSchemas";
+
+     export type ListPetsError = Fetcher.ErrorWrapper<undefined>;
+
+     export type ListPetsResponse = Schemas.Pet[];
+
+     export type ListPetsVariables = PetstoreInfiniteContext["fetcherOptions"];
+
+     /**
+      * Get all the pets
+      */
+     export const fetchListPets = (variables: ListPetsVariables, signal?: AbortSignal) => petstoreFetch<ListPetsResponse, ListPetsError, undefined, {}, {}, {}>({ url: "/pets", method: "get", ...variables, signal });
+
+     /**
+      * Get all the pets
+      */
+     export const useListPets = <TData = reactQuery.InfiniteData<ListPetsResponse>>(variables: ListPetsVariables, options?: UseInfiniteQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const operation: QueryOperation = { path: "/pets", operationId: "listPets", variables }; const { fetcherOptions, queryOptions, queryKeyFn, paginateVariables, ...paginationOptions } = usePetstoreInfiniteQueryContext(operation, options); return reactQuery.useInfiniteQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn(operation, fetcherOptions),
+         queryFn: ({ signal, pageParam }) => fetchListPets(paginateVariables(pageParam as typeof paginationOptions.initialPageParam, { ...fetcherOptions, ...variables }), signal),
+         ...paginationOptions,
+         ...options,
+         ...queryOptions
+     }); };
+     
+     export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
+
+     export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
+
+     export type QueryOperation = {
+         path: "/pets";
+         operationId: "listPets";
+         variables: ListPetsVariables;
+     };
+     "
+    `);
 });

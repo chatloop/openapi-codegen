@@ -1,14 +1,18 @@
 import * as c from "case";
 import ts from "typescript";
 
-import { ReferenceObject, SchemaObject } from "openapi3-ts";
+import {
+  isSchemaObject,
+  ReferenceObject,
+  SchemaObject,
+} from "openapi3-ts/oas31";
 import { createWatermark } from "../core/createWatermark";
 import { getUsedImports } from "../core/getUsedImports";
 import { schemaToTypeAliasDeclaration } from "../core/schemaToTypeAliasDeclaration";
 import { getEnumProperties } from "../utils/getEnumProperties";
 import { ConfigBase, Context } from "./types";
 
-import { isReferenceObject } from "openapi3-ts";
+import { isReferenceObject } from "openapi3-ts/oas31";
 
 import { findCompatibleMediaType } from "../core/findCompatibleMediaType";
 import { schemaToEnumDeclaration } from "../core/schemaToEnumDeclaration";
@@ -22,7 +26,7 @@ type Config = ConfigBase;
  */
 export const generateSchemaTypes = async (
   context: Context,
-  config: Config = {}
+  config: Config = {},
 ) => {
   const { components } = context.openAPIDocument;
   if (!components) {
@@ -32,7 +36,7 @@ export const generateSchemaTypes = async (
   const sourceFile = ts.createSourceFile(
     "index.ts",
     "",
-    ts.ScriptTarget.Latest
+    ts.ScriptTarget.Latest,
   );
 
   const printer = ts.createPrinter({
@@ -51,7 +55,7 @@ export const generateSchemaTypes = async (
       .join("\n");
 
   const handleTypeAlias = (
-    componentSchema: [string, SchemaObject | ReferenceObject][]
+    componentSchema: [string, SchemaObject | ReferenceObject][],
   ) =>
     componentSchema.reduce<ts.Node[]>(
       (mem, [name, schema]) => [
@@ -63,10 +67,10 @@ export const generateSchemaTypes = async (
             openAPIDocument: context.openAPIDocument,
             currentComponent: "schemas",
           },
-          config.useEnums
+          config.useEnums,
         ),
       ],
-      []
+      [],
     );
 
   const filenamePrefix =
@@ -84,7 +88,9 @@ export const generateSchemaTypes = async (
   // Generate `components/schemas` types
   if (components.schemas) {
     const schemas: ts.Node[] = [];
-    const componentSchemaEntries = Object.entries(components.schemas);
+    const componentSchemaEntries = Object.entries(components.schemas).filter(
+      (entry): entry is [string, SchemaObject] => isSchemaObject(entry[1]),
+    );
 
     if (config.useEnums) {
       const enumSchemaEntries = getEnumProperties(componentSchemaEntries);
@@ -96,13 +102,14 @@ export const generateSchemaTypes = async (
             currentComponent: "schemas",
           }),
         ],
-        []
+        [],
       );
 
       const componentsSchemas = handleTypeAlias(
         componentSchemaEntries.filter(
-          ([name]) => !enumSchemaEntries.some(([enumName]) => name === enumName)
-        )
+          ([name]) =>
+            !enumSchemaEntries.some(([enumName]) => name === enumName),
+        ),
       );
 
       schemas.push(...enumSchemas, ...componentsSchemas);
@@ -117,7 +124,7 @@ export const generateSchemaTypes = async (
         createWatermark(context.openAPIDocument.info),
         ...getUsedImports(schemas, files).nodes,
         ...schemas,
-      ])
+      ]),
     );
   }
 
@@ -145,7 +152,7 @@ export const generateSchemaTypes = async (
           createWatermark(context.openAPIDocument.info),
           ...getUsedImports(componentsResponses, files).nodes,
           ...componentsResponses,
-        ])
+        ]),
       );
     }
   }
@@ -153,7 +160,7 @@ export const generateSchemaTypes = async (
   // Generate `components/requestBodies` types
   if (components.requestBodies) {
     const componentsRequestBodies = Object.entries(
-      components.requestBodies
+      components.requestBodies,
     ).reduce<ts.Node[]>((mem, [name, requestBodyObject]) => {
       if (isReferenceObject(requestBodyObject)) return mem;
       const mediaType = findCompatibleMediaType(requestBodyObject);
@@ -175,7 +182,7 @@ export const generateSchemaTypes = async (
           createWatermark(context.openAPIDocument.info),
           ...getUsedImports(componentsRequestBodies, files).nodes,
           ...componentsRequestBodies,
-        ])
+        ]),
       );
     }
   }
@@ -203,7 +210,7 @@ export const generateSchemaTypes = async (
         createWatermark(context.openAPIDocument.info),
         ...getUsedImports(componentsParameters, files).nodes,
         ...componentsParameters,
-      ])
+      ]),
     );
   }
 

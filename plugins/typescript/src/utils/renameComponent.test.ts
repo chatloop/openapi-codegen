@@ -1,4 +1,4 @@
-import { OpenAPIObject } from "openapi3-ts";
+import { OpenAPIObject } from "openapi3-ts/oas31";
 import { petstore } from "../fixtures/petstore";
 import { renameComponent } from "./renameComponent";
 

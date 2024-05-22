@@ -1,4 +1,4 @@
-import { ResponseObject } from "openapi3-ts";
+import { ResponseObject } from "openapi3-ts/oas31";
 import { print } from "../testUtils";
 import { getErrorResponseType } from "./getErrorResponseType";
 
@@ -13,8 +13,8 @@ describe("getErrorResponseType", () => {
           },
 
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "Fetcher.ErrorWrapper<{
           status: 500;
@@ -33,8 +33,8 @@ describe("getErrorResponseType", () => {
           },
 
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "Fetcher.ErrorWrapper<{
           status: 404;
@@ -52,8 +52,8 @@ describe("getErrorResponseType", () => {
         getErrorResponseType({
           responses: {},
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toEqual("Fetcher.ErrorWrapper<undefined>");
   });
 
@@ -66,8 +66,8 @@ describe("getErrorResponseType", () => {
           },
 
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "Fetcher.ErrorWrapper<{
           status: ClientErrorStatus | ServerErrorStatus;
@@ -86,8 +86,8 @@ describe("getErrorResponseType", () => {
           },
 
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "Fetcher.ErrorWrapper<{
           status: ClientErrorStatus;
@@ -109,8 +109,8 @@ describe("getErrorResponseType", () => {
           },
 
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "Fetcher.ErrorWrapper<{
           status: ServerErrorStatus;
@@ -132,8 +132,8 @@ describe("getErrorResponseType", () => {
           },
 
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "Fetcher.ErrorWrapper<{
           status: 422;
@@ -156,8 +156,8 @@ describe("getErrorResponseType", () => {
           },
 
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "Fetcher.ErrorWrapper<{
           status: 501;
@@ -185,8 +185,8 @@ describe("getErrorResponseType", () => {
           },
 
           printNodes: (nodes) => nodes.map(print).join("\n"),
-        })
-      )
+        }),
+      ),
     ).toMatchInlineSnapshot(`
       "Fetcher.ErrorWrapper<{
           status: 422;

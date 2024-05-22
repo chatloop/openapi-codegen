@@ -8,9 +8,9 @@ import {
   SchemaObject,
   isReferenceObject,
   isSchemaObject,
-} from "openapi3-ts";
+} from "openapi3-ts/oas31";
 import { singular } from "pluralize";
-import { isValidIdentifier } from "tsutils";
+import { isValidPropertyName } from "tsutils";
 import ts, { factory as f } from "typescript";
 import { getReferenceSchema } from "./getReferenceSchema";
 
@@ -18,8 +18,8 @@ type RemoveIndex<T> = {
   [P in keyof T as string extends P
     ? never
     : number extends P
-    ? never
-    : P]: T[P];
+      ? never
+      : P]: T[P];
 };
 
 export type OpenAPIComponentType = Extract<
@@ -48,9 +48,9 @@ let useEnumsConfigBase: boolean | undefined;
  */
 export const schemaToTypeAliasDeclaration = (
   name: string,
-  schema: SchemaObject,
+  schema: SchemaObject | ReferenceObject,
   context: Context,
-  useEnums?: boolean
+  useEnums?: boolean,
 ): ts.Node[] => {
   useEnumsConfigBase = useEnums;
   const jsDocNode = getJSDocComment(schema, context);
@@ -58,7 +58,7 @@ export const schemaToTypeAliasDeclaration = (
     [f.createModifier(ts.SyntaxKind.ExportKeyword)],
     pascal(name),
     undefined,
-    getType(schema, context, name)
+    getType(schema, context, name),
   );
 
   return jsDocNode ? [jsDocNode, declarationNode] : [declarationNode];
@@ -74,13 +74,13 @@ export const getType = (
   schema: SchemaObject | ReferenceObject,
   context: Context,
   name?: string,
-  isNodeEnum?: boolean
+  isNodeEnum?: boolean,
 ): ts.TypeNode => {
   if (isReferenceObject(schema)) {
     const [hash, topLevel, namespace, name] = schema.$ref.split("/");
     if (hash !== "#" || topLevel !== "components") {
       throw new Error(
-        "This library only resolve $ref that are include into `#/components/*` for now"
+        "This library only resolve $ref that are include into `#/components/*` for now",
       );
     }
     if (namespace === context.currentComponent) {
@@ -90,8 +90,8 @@ export const getType = (
     return f.createTypeReferenceNode(
       f.createQualifiedName(
         f.createIdentifier(pascal(namespace)),
-        f.createIdentifier(pascal(name))
-      )
+        f.createIdentifier(pascal(name)),
+      ),
     );
   }
 
@@ -100,61 +100,56 @@ export const getType = (
   }
 
   if (schema.oneOf) {
-    return f.createUnionTypeNode([
-      ...schema.oneOf.map((i) =>
+    return f.createUnionTypeNode(
+      schema.oneOf.map((i) =>
         withDiscriminator(
-          getType({ ...omit(schema, ["oneOf", "nullable"]), ...i }, context),
+          getType({ ...omit(schema, ["oneOf"]), ...i }, context),
           i,
           schema.discriminator,
-          context
-        )
+          context,
+        ),
       ),
-      ...(schema.nullable ? [f.createLiteralTypeNode(f.createNull())] : []),
-    ]);
+    );
   }
 
   if (schema.anyOf) {
-    return f.createUnionTypeNode([
-      ...schema.anyOf.map((i) =>
+    return f.createUnionTypeNode(
+      schema.anyOf.map((i) =>
         withDiscriminator(
-          getType({ ...omit(schema, ["anyOf", "nullable"]), ...i }, context),
+          getType({ ...omit(schema, ["anyOf"]), ...i }, context),
           i,
           schema.discriminator,
-          context
-        )
+          context,
+        ),
       ),
-      ...(schema.nullable ? [f.createLiteralTypeNode(f.createNull())] : []),
-    ]);
+    );
   }
 
   if (schema.allOf) {
     const adHocSchemas: Array<SchemaObject> = [];
     if (schema.properties) {
       adHocSchemas.push({
-        type: 'object',
+        type: "object",
         properties: schema.properties,
-        required: schema.required
+        required: schema.required,
       });
     }
     if (schema.additionalProperties) {
       adHocSchemas.push({
-        type: 'object',
-        additionalProperties: schema.additionalProperties
+        type: "object",
+        additionalProperties: schema.additionalProperties,
       });
     }
-    return getAllOf([
-      ...schema.allOf,
-      ...adHocSchemas
-     ], context);
+    return getAllOf([...schema.allOf, ...adHocSchemas], context);
   }
 
   if (schema.enum) {
     if (isNodeEnum) {
-      return f.createTypeReferenceNode(f.createIdentifier(name || ""));
+      return f.createTypeReferenceNode(f.createIdentifier(pascal(name || "")));
     }
 
-    const unionTypes = f.createUnionTypeNode([
-      ...schema.enum.map((value) => {
+    const unionTypes = f.createUnionTypeNode(
+      schema.enum.map((value) => {
         if (typeof value === "string") {
           return f.createLiteralTypeNode(f.createStringLiteral(value));
         }
@@ -163,13 +158,15 @@ export const getType = (
         }
         if (typeof value === "boolean") {
           return f.createLiteralTypeNode(
-            value ? f.createTrue() : f.createFalse()
+            value ? f.createTrue() : f.createFalse(),
           );
+        }
+        if (value === null) {
+          return f.createLiteralTypeNode(f.createNull());
         }
         return f.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword);
       }),
-      ...(schema.nullable ? [f.createLiteralTypeNode(f.createNull())] : []),
-    ]);
+    );
 
     return unionTypes;
   }
@@ -183,119 +180,97 @@ export const getType = (
   if (schema.items && !schema.type) {
     schema.type = "array";
   }
+  if (schema.const) {
+    return f.createLiteralTypeNode(f.createStringLiteral(schema.const));
+  }
 
-  switch (schema.type) {
-    case "null":
-      return f.createLiteralTypeNode(f.createNull());
-    case "integer":
-    case "number":
-      return withNullable(
-        f.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword),
-        schema.nullable
-      );
-    case "string":
-      if (schema.format === "binary") {
-        return f.createTypeReferenceNode("Blob");
-      }
-      return withNullable(
-        f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-        schema.nullable
-      );
-    case "boolean":
-      return withNullable(
-        f.createKeywordTypeNode(ts.SyntaxKind.BooleanKeyword),
-        schema.nullable
-      );
-    case "object":
-      if (schema.maxProperties === 0) {
-        return withNullable(f.createTypeLiteralNode([]), schema.nullable);
-      }
+  if (typeof schema.type === "string") {
+    switch (schema.type) {
+      case "null":
+        return f.createLiteralTypeNode(f.createNull());
+      case "integer":
+      case "number":
+        return f.createKeywordTypeNode(ts.SyntaxKind.NumberKeyword);
+      case "string":
+        if (schema.format === "binary") {
+          return f.createTypeReferenceNode("Blob");
+        }
+        return f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword);
+      case "boolean":
+        return f.createKeywordTypeNode(ts.SyntaxKind.BooleanKeyword);
+      case "object":
+        if (schema.maxProperties === 0) {
+          return f.createTypeLiteralNode([]);
+        }
 
-      if (
-        !schema.properties /* free form object */ &&
-        !schema.additionalProperties
-      ) {
-        return withNullable(
-          f.createTypeReferenceNode(f.createIdentifier("Record"), [
+        if (
+          !schema.properties /* free form object */ &&
+          !schema.additionalProperties
+        ) {
+          return f.createTypeReferenceNode(f.createIdentifier("Record"), [
             f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
             f.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword),
-          ]),
-          schema.nullable
+          ]);
+        }
+
+        const members: ts.TypeElement[] = Object.entries(
+          schema.properties || {},
+        ).map(([key, property]) => {
+          const isEnum =
+            typeof property === "object" &&
+            "enum" in property &&
+            useEnumsConfigBase;
+
+          const propertyNode = f.createPropertySignature(
+            undefined,
+            isValidPropertyName(key) ? key : f.createStringLiteral(key),
+            schema.required?.includes(key)
+              ? undefined
+              : f.createToken(ts.SyntaxKind.QuestionToken),
+            getType(
+              property,
+              context,
+              `${name}${pascal(key)}`.replace(/[^a-zA-Z0-9 ]/g, ""),
+              isEnum,
+            ),
+          );
+          const jsDocNode = getJSDocComment(property, context);
+          if (jsDocNode) addJSDocToNode(propertyNode, jsDocNode);
+
+          return propertyNode;
+        });
+
+        const additionalPropertiesNode = getAdditionalProperties(
+          schema,
+          context,
         );
-      }
 
-      const members: ts.TypeElement[] = Object.entries(
-        schema.properties || {}
-      ).map(([key, property]) => {
-        const isEnum = typeof property === "object" && "enum" in property && useEnumsConfigBase;
-
-        const propertyNode = f.createPropertySignature(
-          undefined,
-          isValidIdentifier(key)
-            ? f.createIdentifier(key)
-            : f.createComputedPropertyName(f.createStringLiteral(key)),
-          schema.required?.includes(key)
-            ? undefined
-            : f.createToken(ts.SyntaxKind.QuestionToken),
-          getType(
-            property,
-            context,
-            `${name}${pascal(key)}`.replace(/[^a-zA-Z0-9 ]/g, ""),
-            isEnum
-          )
-        );
-        const jsDocNode = getJSDocComment(property, context);
-        if (jsDocNode) addJSDocToNode(propertyNode, jsDocNode);
-
-        return propertyNode;
-      });
-
-      const additionalPropertiesNode = getAdditionalProperties(schema, context);
-
-      if (additionalPropertiesNode) {
-        return withNullable(
-          members.length > 0
+        if (additionalPropertiesNode) {
+          return members.length > 0
             ? f.createIntersectionTypeNode([
                 f.createTypeLiteralNode(members),
                 f.createTypeLiteralNode([additionalPropertiesNode]),
               ])
-            : f.createTypeLiteralNode([additionalPropertiesNode]),
-          schema.nullable
-        );
-      }
+            : f.createTypeLiteralNode([additionalPropertiesNode]);
+        }
 
-      return withNullable(f.createTypeLiteralNode(members), schema.nullable);
-    case "array":
-      return withNullable(
-        f.createArrayTypeNode(
+        return f.createTypeLiteralNode(members);
+      case "array":
+        return f.createArrayTypeNode(
           !schema.items || Object.keys(schema.items).length === 0
             ? f.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
-            : getType(schema.items, context)
-        ),
-        schema.nullable
-      );
-    default:
-      return withNullable(
-        f.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword),
-        schema.nullable
-      );
+            : getType(schema.items, context),
+        );
+      default:
+        return f.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
+    }
   }
-};
-
-/**
- * Add nullable option if needed.
- *
- * @param node Any node
- * @param nullable Add nullable option if true
- * @returns Type with or without nullable option
- */
-const withNullable = (
-  node: ts.TypeNode,
-  nullable: boolean | undefined
-): ts.TypeNode => {
-  return nullable
-    ? f.createUnionTypeNode([node, f.createLiteralTypeNode(f.createNull())])
-    : node;
+  if (schema.type) {
+    return f.createUnionTypeNode(
+      schema.type.map((type) => getType({ ...schema, type }, context)),
+    );
+  }
+  return f.createKeywordTypeNode(ts.SyntaxKind.VoidKeyword);
 };
 
 /**
@@ -309,30 +284,32 @@ const withDiscriminator = (
   node: ts.TypeNode,
   schema: SchemaObject | ReferenceObject,
   discriminator: DiscriminatorObject | undefined,
-  context: Context
+  context: Context,
 ): ts.TypeNode => {
   if (!discriminator || !discriminator.propertyName || !discriminator.mapping) {
     return node;
   }
 
-  const discriminatedValue = findKey(
-    discriminator.mapping,
-    (i) => i === schema.$ref
-  );
+  const discriminatedValue = isReferenceObject(schema)
+    ? findKey(discriminator.mapping, (i) => i === schema.$ref)
+    : undefined;
   if (discriminatedValue) {
     const propertyNameAsLiteral = f.createTypeLiteralNode([
       f.createPropertySignature(
         undefined,
         f.createIdentifier(discriminator.propertyName),
         undefined,
-        f.createLiteralTypeNode(f.createStringLiteral(discriminatedValue))
+        f.createLiteralTypeNode(f.createStringLiteral(discriminatedValue)),
       ),
     ]);
 
-    const spec = get<SchemaObject | ReferenceObject>(
-      context.openAPIDocument,
-      schema.$ref.slice(2).replace(/\//g, ".")
-    );
+    const spec = isReferenceObject(schema)
+      ? get<SchemaObject | ReferenceObject>(
+          context.openAPIDocument,
+          // @ts-expect-error overload incorrectly inferred from lodash typings
+          schema.$ref.slice(2).replace(/\//g, "."),
+        )
+      : undefined;
     if (spec && isSchemaObject(spec) && spec.properties) {
       const property = spec.properties[discriminator.propertyName];
       if (
@@ -354,9 +331,9 @@ const withDiscriminator = (
       [
         node,
         f.createLiteralTypeNode(
-          f.createStringLiteral(discriminator.propertyName)
+          f.createStringLiteral(discriminator.propertyName),
         ),
-      ]
+      ],
     );
 
     return f.createIntersectionTypeNode([
@@ -373,7 +350,7 @@ const withDiscriminator = (
  */
 const getAllOf = (
   members: Required<SchemaObject>["allOf"],
-  context: Context
+  context: Context,
 ): ts.TypeNode => {
   const initialValue = {
     isSchemaObjectOnly: true,
@@ -399,9 +376,9 @@ const getAllOf = (
     if (isSchemaObject(member)) {
       const { mergedSchema, isColliding } = mergeSchemas(
         acc.mergedSchema,
-        member
+        member,
+        context,
       );
-
       return {
         ...acc,
         mergedSchema,
@@ -417,11 +394,12 @@ const getAllOf = (
     if (isReferenceObject(member)) {
       const referenceSchema = getReferenceSchema(
         member.$ref,
-        context.openAPIDocument
+        context.openAPIDocument,
       );
       const { mergedSchema, isColliding } = mergeSchemas(
         acc.mergedSchema,
-        referenceSchema
+        referenceSchema,
+        context,
       );
 
       return {
@@ -456,11 +434,13 @@ const getAllOf = (
  *
  * @param a
  * @param b
+ * @param context
  * @returns the merged schema and a flag to know if the schema was colliding
  */
 const mergeSchemas = (
   a: SchemaObject,
-  b: SchemaObject
+  b: SchemaObject,
+  context: Context,
 ): { mergedSchema: SchemaObject; isColliding: boolean } => {
   if (Boolean(a.type) && Boolean(b.type) && a.type !== b.type) {
     return {
@@ -478,7 +458,7 @@ const mergeSchemas = (
     let isColliding = false;
     const properties = Object.entries(a.properties).reduce(
       (mergedProperties, [key, propertyA]) => {
-        const propertyB = b.properties?.[key];
+        let propertyB = b.properties?.[key];
         if (propertyB) {
           isColliding = true;
         }
@@ -502,9 +482,32 @@ const mergeSchemas = (
           };
         }
 
-        return { ...mergedProperties, [key]: propertyA };
+        if (propertyB) {
+          if (isReferenceObject(propertyA)) {
+            propertyA = getReferenceSchema(
+              propertyA.$ref,
+              context.openAPIDocument,
+            );
+          }
+          if (isReferenceObject(propertyB)) {
+            propertyB = getReferenceSchema(
+              propertyB.$ref,
+              context.openAPIDocument,
+            );
+          }
+          if (propertyB) {
+            return {
+              ...mergedProperties,
+              [key]: mergeSchemas(propertyA, propertyB, context).mergedSchema,
+            };
+          }
+        }
+        return {
+          ...mergedProperties,
+          [key]: propertyA,
+        };
       },
-      {} as typeof a.properties
+      {} as typeof a.properties,
     );
 
     return {
@@ -565,20 +568,23 @@ const keysToExpressAsJsDocProperty: Array<keyof RemoveIndex<SchemaObject>> = [
  * @returns JSDoc node
  */
 export const getJSDocComment = (
-  schema: SchemaObject,
-  context: Context
+  schema: SchemaObject | ReferenceObject,
+  context: Context,
 ): ts.JSDoc | undefined => {
+  if (isReferenceObject(schema)) {
+    return undefined;
+  }
   // `allOf` can add some documentation to the schema, let’s merge all items as first step
   const schemaWithAllOfResolved = schema.allOf
     ? schema.allOf.reduce<SchemaObject>((mem, allOfItem) => {
         if (isReferenceObject(allOfItem)) {
           const referenceSchema = getReferenceSchema(
             allOfItem.$ref,
-            context.openAPIDocument
+            context.openAPIDocument,
           );
-          return mergeSchemas(mem, referenceSchema).mergedSchema;
+          return mergeSchemas(mem, referenceSchema, context).mergedSchema;
         } else {
-          return mergeSchemas(mem, allOfItem).mergedSchema;
+          return mergeSchemas(mem, allOfItem, context).mergedSchema;
         }
       }, schema)
     : schema;
@@ -611,7 +617,7 @@ export const getJSDocComment = (
     .filter(
       ([key, value]) =>
         keysToExpressAsJsDocProperty.includes(key as any) ||
-        (/^x-/.exec(key) && typeof value !== "object")
+        (/^x-/.exec(key) && typeof value !== "object"),
     )
     .forEach(([key, value]) => {
       if (Array.isArray(value)) {
@@ -620,17 +626,17 @@ export const getJSDocComment = (
             f.createJSDocPropertyTag(
               f.createIdentifier(singular(key)),
               getJsDocIdentifier(v),
-              false
-            )
-          )
+              false,
+            ),
+          ),
         );
       } else if (typeof value !== "undefined") {
         propertyTags.push(
           f.createJSDocPropertyTag(
             f.createIdentifier(key),
             getJsDocIdentifier(value),
-            false
-          )
+            false,
+          ),
         );
       }
     });
@@ -641,7 +647,7 @@ export const getJSDocComment = (
         ? schemaWithAllOfResolved.description.trim() +
             (propertyTags.length ? "\n" : "")
         : undefined,
-      propertyTags
+      propertyTags,
     );
   }
   return undefined;
@@ -659,7 +665,7 @@ const addJSDocToNode = (node: ts.Node, jsDocComment: ts.JSDoc) => {
   const sourceFile = ts.createSourceFile(
     "index.ts",
     "",
-    ts.ScriptTarget.Latest
+    ts.ScriptTarget.Latest,
   );
 
   const printer = ts.createPrinter({
@@ -676,7 +682,7 @@ const addJSDocToNode = (node: ts.Node, jsDocComment: ts.JSDoc) => {
     node,
     ts.SyntaxKind.MultiLineCommentTrivia,
     "*" + jsDocString, // https://github.com/microsoft/TypeScript/issues/17146
-    true
+    true,
   );
 };
 
@@ -689,7 +695,7 @@ const addJSDocToNode = (node: ts.Node, jsDocComment: ts.JSDoc) => {
  */
 const getAdditionalProperties = (
   schema: SchemaObject,
-  context: Context
+  context: Context,
 ): ts.IndexSignatureDeclaration | undefined => {
   if (!schema.additionalProperties) return undefined;
 
@@ -702,12 +708,12 @@ const getAdditionalProperties = (
         f.createIdentifier("key"),
         undefined,
         f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-        undefined
+        undefined,
       ),
     ],
     schema.additionalProperties === true ||
       Object.keys(schema.additionalProperties).length === 0
       ? f.createKeywordTypeNode(ts.SyntaxKind.AnyKeyword)
-      : getType(schema.additionalProperties, context)
+      : getType(schema.additionalProperties, context),
   );
 };
