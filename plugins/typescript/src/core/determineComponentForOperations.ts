@@ -1,7 +1,7 @@
 import { OpenAPIObject, PathItemObject } from "openapi3-ts/oas31";
 import { isOperationObject } from "./isOperationObject";
 import { isVerb } from "./isVerb";
-import { isJsonApiOperationPaginated } from "./isJsonApiResponsePaginated";
+import { isJsonApiOperationPaginated } from "./isJsonApiOperationPaginated";
 
 export const determineComponentForOperations = (
   openAPIDocument: OpenAPIObject,

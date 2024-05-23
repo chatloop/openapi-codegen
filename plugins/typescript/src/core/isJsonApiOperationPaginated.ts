@@ -9,7 +9,8 @@ import {
 import { getReferenceSchema } from "./getReferenceSchema";
 
 /**
- * Extract the json api resource type from success responses (2xx)
+ * Determine if an operation has a json api response and supports pagination
+ * i.e. it has query parameters that start with `page[`
  */
 export const isJsonApiOperationPaginated = (
   operation: OperationObject,

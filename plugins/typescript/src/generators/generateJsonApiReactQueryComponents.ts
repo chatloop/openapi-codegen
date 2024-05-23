@@ -4,6 +4,7 @@ import * as c from "case";
 import { ConfigBase, Context } from "./types";
 import {
   isReferenceObject,
+  OpenAPIObject,
   OperationObject,
   PathItemObject,
 } from "openapi3-ts/oas31";
@@ -21,8 +22,9 @@ import {
   JsonApiResponseResource,
 } from "../core/getJsonApiResponseResource";
 import { generateReactQueryComponents } from "./generateReactQueryComponents";
-import { isJsonApiOperationPaginated } from "../core/isJsonApiResponsePaginated";
+import { isJsonApiOperationPaginated } from "../core/isJsonApiOperationPaginated";
 import { determineComponentForOperations } from "../core/determineComponentForOperations";
+import { jsonApiOperationHasIncludes } from "../core/jsonApiOperationHasIncludes";
 
 export type Config = ConfigBase & {
   /**
@@ -165,6 +167,7 @@ export const generateJsonApiReactQueryComponents = async (
   );
   context.openAPIDocument.paths &&
     Object.entries(context.openAPIDocument.paths).forEach(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ([route, verbs]: [string, PathItemObject]) => {
         Object.entries(verbs).forEach(([verb, operation]) => {
           if (!isVerb(verb) || !isOperationObject(operation)) return;
@@ -215,6 +218,7 @@ export const generateJsonApiReactQueryComponents = async (
           switch (component) {
             case "useInfiniteQuery":
               hook = createInfiniteQueryHook({
+                openApiDocument: context.openAPIDocument,
                 operation,
                 dataType: c.pascal(`${operationId}Response`),
                 errorType: c.pascal(`${operationId}Error`),
@@ -225,6 +229,7 @@ export const generateJsonApiReactQueryComponents = async (
               break;
             case "useQuery":
               hook = createQueryHook({
+                openApiDocument: context.openAPIDocument,
                 operation,
                 dataType: c.pascal(`${operationId}Response`),
                 errorType: c.pascal(`${operationId}Error`),
@@ -235,6 +240,7 @@ export const generateJsonApiReactQueryComponents = async (
               break;
             case "useMutate":
               // hook = createMutationHook({
+              //   openApiDocument: context.openAPIDocument,
               //   operation,
               //   dataType: c.pascal(`${operationId}Response`),
               //   errorType: c.pascal(`${operationId}Error`),
@@ -442,6 +448,7 @@ export const generateJsonApiReactQueryComponents = async (
 // };
 //
 const createQueryHook = ({
+  openApiDocument,
   dataType,
   errorType,
   variablesType,
@@ -449,6 +456,7 @@ const createQueryHook = ({
   operation,
   resourceType,
 }: {
+  openApiDocument: OpenAPIObject;
   name: string;
   dataType: string;
   errorType: string;
@@ -488,9 +496,7 @@ const createQueryHook = ({
                   f.createArrayTypeNode(
                     f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
                   ),
-                  f.createArrayTypeNode(
-                    f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-                  ),
+                  f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
                 ),
               ],
               [
@@ -499,24 +505,7 @@ const createQueryHook = ({
                   undefined,
                   f.createIdentifier("variables"),
                   undefined,
-                  f.createIntersectionTypeNode([
-                    f.createTypeReferenceNode(`Components.${variablesType}`),
-                    f.createTypeLiteralNode([
-                      f.createPropertySignature(
-                        undefined,
-                        "queryParams",
-                        f.createToken(ts.SyntaxKind.QuestionToken),
-                        f.createTypeLiteralNode([
-                          f.createPropertySignature(
-                            undefined,
-                            "include",
-                            f.createToken(ts.SyntaxKind.QuestionToken),
-                            f.createTypeReferenceNode("Includes"),
-                          ),
-                        ]),
-                      ),
-                    ]),
-                  ]),
+                  createVariableType(variablesType, operation, openApiDocument),
                 ),
                 f.createParameterDeclaration(
                   undefined,
@@ -594,6 +583,7 @@ const createQueryHook = ({
 };
 
 const createInfiniteQueryHook = ({
+  openApiDocument,
   dataType,
   errorType,
   variablesType,
@@ -601,6 +591,7 @@ const createInfiniteQueryHook = ({
   operation,
   resourceType,
 }: {
+  openApiDocument: OpenAPIObject;
   name: string;
   dataType: string;
   errorType: string;
@@ -638,9 +629,7 @@ const createInfiniteQueryHook = ({
                   f.createArrayTypeNode(
                     f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
                   ),
-                  f.createArrayTypeNode(
-                    f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-                  ),
+                  f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
                 ),
               ],
               [
@@ -649,24 +638,7 @@ const createInfiniteQueryHook = ({
                   undefined,
                   f.createIdentifier("variables"),
                   undefined,
-                  f.createIntersectionTypeNode([
-                    f.createTypeReferenceNode(`Components.${variablesType}`),
-                    f.createTypeLiteralNode([
-                      f.createPropertySignature(
-                        undefined,
-                        "queryParams",
-                        f.createToken(ts.SyntaxKind.QuestionToken),
-                        f.createTypeLiteralNode([
-                          f.createPropertySignature(
-                            undefined,
-                            "include",
-                            f.createToken(ts.SyntaxKind.QuestionToken),
-                            f.createTypeReferenceNode("Includes"),
-                          ),
-                        ]),
-                      ),
-                    ]),
-                  ]),
+                  createVariableType(variablesType, operation, openApiDocument),
                 ),
                 f.createParameterDeclaration(
                   undefined,
@@ -746,6 +718,35 @@ const createInfiniteQueryHook = ({
   );
 
   return nodes;
+};
+
+const createVariableType = (
+  variablesType: string,
+  operation: OperationObject,
+  openApiDocument: OpenAPIObject,
+) => {
+  if (jsonApiOperationHasIncludes(operation, openApiDocument)) {
+    return f.createIntersectionTypeNode([
+      f.createTypeReferenceNode(`Components.${variablesType}`),
+      f.createTypeLiteralNode([
+        f.createPropertySignature(
+          undefined,
+          "queryParams",
+          f.createToken(ts.SyntaxKind.QuestionToken),
+          f.createTypeLiteralNode([
+            f.createPropertySignature(
+              undefined,
+              "include",
+              f.createToken(ts.SyntaxKind.QuestionToken),
+              f.createTypeReferenceNode("Includes"),
+            ),
+          ]),
+        ),
+      ]),
+    ]);
+  }
+
+  return f.createTypeReferenceNode(`Components.${variablesType}`);
 };
 
 const createReactQueryImport = () =>
