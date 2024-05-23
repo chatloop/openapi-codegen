@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.0.2](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.0.1...openapi-codegen-typescript-v9.0.2) (2024-05-23)
+
+
+### Bug Fixes
+
+* json api hook includes type default and make the inference conditional on the operation supporting includes ([6fcf832](https://github.com/chatloop/openapi-codegen/commit/6fcf8325099b4779d480fe726582fce71e68d31a))
+
 ## [9.0.1](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.0.0...openapi-codegen-typescript-v9.0.1) (2024-05-22)
 
 
