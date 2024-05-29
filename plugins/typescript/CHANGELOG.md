@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.1](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.1.0...openapi-codegen-typescript-v9.1.1) (2024-05-29)
+
+
+### Bug Fixes
+
+* correct context use in variables types for mutations ([ae39799](https://github.com/chatloop/openapi-codegen/commit/ae39799bb39dd4a0af676316f1d8b7825c6169ef))
+
 ## [9.1.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.0.2...openapi-codegen-typescript-v9.1.0) (2024-05-29)
 
 
