@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.0.2...openapi-codegen-typescript-v9.1.0) (2024-05-29)
+
+
+### Features
+
+* add useMutation json api hooks with behaviour for dynamic onMutate and onSuccess side effects via useMutationContext (can be used to invalid queries perform optimistic updates etc. ([19fbc25](https://github.com/chatloop/openapi-codegen/commit/19fbc258e62f6e5723fcd272c743e650845a1c59))
+
 ## [9.0.2](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.0.1...openapi-codegen-typescript-v9.0.2) (2024-05-23)
 
 
