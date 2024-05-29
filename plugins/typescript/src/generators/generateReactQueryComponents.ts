@@ -77,7 +77,7 @@ export const generateReactQueryComponents = async (
   const fetcherFn = c.camel(`${filenamePrefix}-fetch`);
   const queryContextTypeName = `${c.pascal(filenamePrefix)}Context`;
   const infiniteQueryContextTypeName = `${c.pascal(filenamePrefix)}InfiniteContext`;
-
+  const mutationContextTypeName = `${c.pascal(filenamePrefix)}MutationContext`;
   const mutationContextHookName = `use${c.pascal(filenamePrefix)}MutationContext`;
   const queryContextHookName = `use${c.pascal(filenamePrefix)}QueryContext`;
   const infiniteQueryContextHookName = `use${c.pascal(filenamePrefix)}InfiniteQueryContext`;
@@ -144,6 +144,15 @@ export const generateReactQueryComponents = async (
           Valid options: "useMutation", "useQuery", "useInfiniteQuery"`);
           }
           componentsUsed[component] = true;
+          let contextTypeName = queryContextTypeName;
+          switch (component) {
+            case "useInfiniteQuery":
+              contextTypeName = infiniteQueryContextTypeName;
+              break;
+            case "useMutation":
+              contextTypeName = mutationContextTypeName;
+              break;
+          }
 
           const {
             dataType,
@@ -163,11 +172,7 @@ export const generateReactQueryComponents = async (
             pathParameters: verbs.parameters,
             variablesExtraPropsType: f.createIndexedAccessTypeNode(
               f.createTypeReferenceNode(
-                f.createIdentifier(
-                  component === "useInfiniteQuery"
-                    ? infiniteQueryContextTypeName
-                    : queryContextTypeName,
-                ),
+                f.createIdentifier(contextTypeName),
                 undefined,
               ),
               f.createLiteralTypeNode(f.createStringLiteral("fetcherOptions")),
@@ -502,7 +507,9 @@ export const generateReactQueryComponents = async (
     ...(componentsUsed["useInfiniteQuery"]
       ? [infiniteQueryContextHookName, infiniteQueryContextTypeName]
       : []),
-    ...(componentsUsed["useMutation"] ? [mutationContextHookName] : []),
+    ...(componentsUsed["useMutation"]
+      ? [mutationContextHookName, mutationContextTypeName]
+      : []),
   ];
 
   const componentContextImportsNode: ts.Node[] =

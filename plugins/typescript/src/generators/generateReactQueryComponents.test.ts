@@ -738,7 +738,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreMutationContext } from "./petstoreContext";
+     import { usePetstoreMutationContext, PetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
 
@@ -759,7 +759,7 @@ describe("generateReactQueryComponents", () => {
 
      export type AddPetVariables = {
          body: AddPetRequestBody;
-     } & PetstoreContext["fetcherOptions"];
+     } & PetstoreMutationContext["fetcherOptions"];
 
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, AddPetRequestBody, {}, {}, {}>({ url: "/pet", method: "post", ...variables, signal });
 
@@ -883,7 +883,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreMutationContext } from "./petstoreContext";
+     import { usePetstoreMutationContext, PetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
 
@@ -904,7 +904,7 @@ describe("generateReactQueryComponents", () => {
 
      export type AddPetVariables = {
          body: AddPetRequestBody;
-     } & PetstoreContext["fetcherOptions"];
+     } & PetstoreMutationContext["fetcherOptions"];
 
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, AddPetRequestBody, {}, {}, {}>({ url: "/pet", method: "get", ...variables, signal });
 
@@ -1034,7 +1034,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreMutationContext } from "./petstoreContext";
+     import { usePetstoreMutationContext, PetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1049,7 +1049,7 @@ describe("generateReactQueryComponents", () => {
 
      export type AddPetVariables = {
          body: RequestBodies.Dog;
-     } & PetstoreContext["fetcherOptions"];
+     } & PetstoreMutationContext["fetcherOptions"];
 
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, RequestBodies.Dog, {}, {}, {}>({ url: "/pet", method: "post", ...variables, signal });
 
@@ -1158,7 +1158,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreMutationContext } from "./petstoreContext";
+     import { usePetstoreMutationContext, PetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1172,7 +1172,7 @@ describe("generateReactQueryComponents", () => {
      export type UpdatePetVariables = {
          body?: RequestBodies.UpdatePetRequestBody;
          pathParams: UpdatePetPathParams;
-     } & PetstoreContext["fetcherOptions"];
+     } & PetstoreMutationContext["fetcherOptions"];
 
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
@@ -1281,7 +1281,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreMutationContext } from "./petstoreContext";
+     import { usePetstoreMutationContext, PetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1295,7 +1295,7 @@ describe("generateReactQueryComponents", () => {
      export type UpdatePetVariables = {
          body?: RequestBodies.UpdatePetRequestBody;
          pathParams: UpdatePetPathParams;
-     } & PetstoreContext["fetcherOptions"];
+     } & PetstoreMutationContext["fetcherOptions"];
 
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
@@ -1404,7 +1404,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { usePetstoreMutationContext } from "./petstoreContext";
+     import { usePetstoreMutationContext, PetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1418,7 +1418,7 @@ describe("generateReactQueryComponents", () => {
      export type UpdatePetVariables = {
          body?: RequestBodies.UpdatePetRequestBody;
          pathParams: UpdatePetPathParams;
-     } & PetstoreContext["fetcherOptions"];
+     } & PetstoreMutationContext["fetcherOptions"];
 
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
@@ -1527,7 +1527,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
-     import { useMutationContext } from "./context";
+     import { useMutationContext, MutationContext } from "./context";
      import type * as Fetcher from "./fetcher";
      import { fetch } from "./fetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1541,7 +1541,7 @@ describe("generateReactQueryComponents", () => {
      export type UpdatePetVariables = {
          body?: RequestBodies.UpdatePetRequestBody;
          pathParams: UpdatePetPathParams;
-     } & Context["fetcherOptions"];
+     } & MutationContext["fetcherOptions"];
 
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => fetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
