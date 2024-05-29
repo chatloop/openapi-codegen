@@ -109,8 +109,8 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const operation: QueryOperation = { path: "/pets", operationId: "listPets", variables }; const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(operation, options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn(operation, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
@@ -119,11 +119,20 @@ describe("generateReactQueryComponents", () => {
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
+     
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
 
      export type QueryOperation = {
          path: "/pets";
          operationId: "listPets";
          variables: ListPetsVariables;
+     };
+     
+     export type MutationOperation = {
+         method: string;
+         path: string;
+         operationId: never;
+         variables: unknown;
      };
      "
     `);
@@ -237,8 +246,8 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const operation: QueryOperation = { path: "/pets", operationId: "listPets", variables }; const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(operation, options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn(operation, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
@@ -248,10 +257,19 @@ describe("generateReactQueryComponents", () => {
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
+     
      export type QueryOperation = {
          path: "/pets";
          operationId: "listPets";
          variables: ListPetsVariables;
+     };
+     
+     export type MutationOperation = {
+         method: string;
+         path: string;
+         operationId: never;
+         variables: unknown;
      };
      "
     `);
@@ -347,8 +365,8 @@ describe("generateReactQueryComponents", () => {
      /**
       * Info for a specific pet
       */
-     export const useShowPetById = <TData = ShowPetByIdResponse>(variables: ShowPetByIdVariables, options?: UseQueryOptions<ShowPetByIdResponse, ShowPetByIdError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ShowPetByIdResponse, ShowPetByIdError, TData>({
-         queryKey: queryKeyFn({ path: "/pets/{petId}", operationId: "showPetById", variables }, fetcherOptions),
+     export const useShowPetById = <TData = ShowPetByIdResponse>(variables: ShowPetByIdVariables, options?: UseQueryOptions<ShowPetByIdResponse, ShowPetByIdError, TData>) => { const operation: QueryOperation = { path: "/pets/{petId}", operationId: "showPetById", variables }; const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(operation, options); return reactQuery.useQuery<ShowPetByIdResponse, ShowPetByIdError, TData>({
+         queryKey: queryKeyFn(operation, fetcherOptions),
          queryFn: ({ signal }) => fetchShowPetById({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
@@ -357,11 +375,20 @@ describe("generateReactQueryComponents", () => {
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
+     
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
 
      export type QueryOperation = {
          path: "/pets/{petId}";
          operationId: "showPetById";
          variables: ShowPetByIdVariables;
+     };
+     
+     export type MutationOperation = {
+         method: string;
+         path: string;
+         operationId: never;
+         variables: unknown;
      };
      "
     `);
@@ -479,8 +506,8 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const operation: QueryOperation = { path: "/pets", operationId: "listPets", variables }; const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(operation, options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn(operation, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
@@ -489,11 +516,20 @@ describe("generateReactQueryComponents", () => {
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
+     
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
 
      export type QueryOperation = {
          path: "/pets";
          operationId: "listPets";
          variables: ListPetsVariables;
+     };
+     
+     export type MutationOperation = {
+         method: string;
+         path: string;
+         operationId: never;
+         variables: unknown;
      };
      "
     `);
@@ -582,8 +618,8 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const operation: QueryOperation = { path: "/pets", operationId: "listPets", variables }; const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(operation, options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn(operation, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
@@ -592,11 +628,20 @@ describe("generateReactQueryComponents", () => {
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
+     
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
 
      export type QueryOperation = {
          path: "/pets";
          operationId: "listPets";
          variables: ListPetsVariables;
+     };
+     
+     export type MutationOperation = {
+         method: string;
+         path: string;
+         operationId: never;
+         variables: unknown;
      };
      "
     `);
@@ -693,6 +738,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
+     import { usePetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
 
@@ -717,22 +763,29 @@ describe("generateReactQueryComponents", () => {
 
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, AddPetRequestBody, {}, {}, {}>({ url: "/pet", method: "post", ...variables, signal });
 
-     export const useAddPet = (options?: Omit<reactQuery.UseMutationOptions<string, AddPetError, AddPetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreQueryContext();
-         return reactQuery.useMutation<string, AddPetError, AddPetVariables>({
-             mutationFn: (variables: AddPetVariables) => fetchAddPet({ ...fetcherOptions, ...variables }),
-             ...options
-         });
-     };
+     export const useAddPet = (options?: UseMutationOptions<string, AddPetError, AddPetVariables>) => reactQuery.useMutation<string, AddPetError, AddPetVariables>({
+         mutationKey: ["AddPet"],
+         mutationFn: (variables: AddPetVariables) => { const operation: MutationOperation = { method: "post", path: "/pet", operationId: "AddPet", variables }, { fetcherOptions } = usePetstoreMutationContext(operation, options); return fetchAddPet({ ...fetcherOptions, ...variables }); },
+         ...options
+     });
      
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
+     
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
 
      export type QueryOperation = {
          path: string;
          operationId: never;
          variables: unknown;
+     };
+     
+     export type MutationOperation = {
+         method: "post";
+         path: "/pet";
+         operationId: "AddPet";
+         variables: AddPetVariables;
      };
      "
     `);
@@ -750,7 +803,7 @@ describe("generateReactQueryComponents", () => {
         "/pet": {
           get: {
             operationId: "AddPet",
-            "x-openapi-codegen-component": "useMutate",
+            "x-openapi-codegen-component": "useMutation",
             requestBody: {
               content: {
                 "application/json": {
@@ -830,6 +883,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
+     import { usePetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
 
@@ -854,22 +908,29 @@ describe("generateReactQueryComponents", () => {
 
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, AddPetRequestBody, {}, {}, {}>({ url: "/pet", method: "get", ...variables, signal });
 
-     export const useAddPet = (options?: Omit<reactQuery.UseMutationOptions<string, AddPetError, AddPetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreQueryContext();
-         return reactQuery.useMutation<string, AddPetError, AddPetVariables>({
-             mutationFn: (variables: AddPetVariables) => fetchAddPet({ ...fetcherOptions, ...variables }),
-             ...options
-         });
-     };
+     export const useAddPet = (options?: UseMutationOptions<string, AddPetError, AddPetVariables>) => reactQuery.useMutation<string, AddPetError, AddPetVariables>({
+         mutationKey: ["AddPet"],
+         mutationFn: (variables: AddPetVariables) => { const operation: MutationOperation = { method: "get", path: "/pet", operationId: "AddPet", variables }, { fetcherOptions } = usePetstoreMutationContext(operation, options); return fetchAddPet({ ...fetcherOptions, ...variables }); },
+         ...options
+     });
      
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
+
      export type QueryOperation = {
          path: string;
          operationId: never;
          variables: unknown;
+     };
+     
+     export type MutationOperation = {
+         method: "get";
+         path: "/pet";
+         operationId: "AddPet";
+         variables: AddPetVariables;
      };
      "
     `);
@@ -973,6 +1034,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
+     import { usePetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -991,22 +1053,29 @@ describe("generateReactQueryComponents", () => {
 
      export const fetchAddPet = (variables: AddPetVariables, signal?: AbortSignal) => petstoreFetch<string, AddPetError, RequestBodies.Dog, {}, {}, {}>({ url: "/pet", method: "post", ...variables, signal });
 
-     export const useAddPet = (options?: Omit<reactQuery.UseMutationOptions<string, AddPetError, AddPetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreQueryContext();
-         return reactQuery.useMutation<string, AddPetError, AddPetVariables>({
-             mutationFn: (variables: AddPetVariables) => fetchAddPet({ ...fetcherOptions, ...variables }),
-             ...options
-         });
-     };
+     export const useAddPet = (options?: UseMutationOptions<string, AddPetError, AddPetVariables>) => reactQuery.useMutation<string, AddPetError, AddPetVariables>({
+         mutationKey: ["AddPet"],
+         mutationFn: (variables: AddPetVariables) => { const operation: MutationOperation = { method: "post", path: "/pet", operationId: "AddPet", variables }, { fetcherOptions } = usePetstoreMutationContext(operation, options); return fetchAddPet({ ...fetcherOptions, ...variables }); },
+         ...options
+     });
      
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
+
      export type QueryOperation = {
          path: string;
          operationId: never;
          variables: unknown;
+     };
+     
+     export type MutationOperation = {
+         method: "post";
+         path: "/pet";
+         operationId: "AddPet";
+         variables: AddPetVariables;
      };
      "
     `);
@@ -1089,6 +1158,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
+     import { usePetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1106,22 +1176,29 @@ describe("generateReactQueryComponents", () => {
 
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
-     export const useUpdatePet = (options?: Omit<reactQuery.UseMutationOptions<string, UpdatePetError, UpdatePetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreQueryContext();
-         return reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
-             mutationFn: (variables: UpdatePetVariables) => fetchUpdatePet({ ...fetcherOptions, ...variables }),
-             ...options
-         });
-     };
+     export const useUpdatePet = (options?: UseMutationOptions<string, UpdatePetError, UpdatePetVariables>) => reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
+         mutationKey: ["updatePet"],
+         mutationFn: (variables: UpdatePetVariables) => { const operation: MutationOperation = { method: "put", path: "/pet/{petId}", operationId: "updatePet", variables }, { fetcherOptions } = usePetstoreMutationContext(operation, options); return fetchUpdatePet({ ...fetcherOptions, ...variables }); },
+         ...options
+     });
      
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
+
      export type QueryOperation = {
          path: string;
          operationId: never;
          variables: unknown;
+     };
+     
+     export type MutationOperation = {
+         method: "put";
+         path: "/pet/{petId}";
+         operationId: "updatePet";
+         variables: UpdatePetVariables;
      };
      "
     `);
@@ -1204,6 +1281,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
+     import { usePetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1221,22 +1299,29 @@ describe("generateReactQueryComponents", () => {
 
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
-     export const useUpdatePet = (options?: Omit<reactQuery.UseMutationOptions<string, UpdatePetError, UpdatePetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreQueryContext();
-         return reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
-             mutationFn: (variables: UpdatePetVariables) => fetchUpdatePet({ ...fetcherOptions, ...variables }),
-             ...options
-         });
-     };
+     export const useUpdatePet = (options?: UseMutationOptions<string, UpdatePetError, UpdatePetVariables>) => reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
+         mutationKey: ["updatePet"],
+         mutationFn: (variables: UpdatePetVariables) => { const operation: MutationOperation = { method: "put", path: "/pet/{petId}", operationId: "updatePet", variables }, { fetcherOptions } = usePetstoreMutationContext(operation, options); return fetchUpdatePet({ ...fetcherOptions, ...variables }); },
+         ...options
+     });
      
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
+
      export type QueryOperation = {
          path: string;
          operationId: never;
          variables: unknown;
+     };
+     
+     export type MutationOperation = {
+         method: "put";
+         path: "/pet/{petId}";
+         operationId: "updatePet";
+         variables: UpdatePetVariables;
      };
      "
     `);
@@ -1319,6 +1404,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
+     import { usePetstoreMutationContext } from "./petstoreContext";
      import type * as Fetcher from "./petstoreFetcher";
      import { petstoreFetch } from "./petstoreFetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1336,22 +1422,29 @@ describe("generateReactQueryComponents", () => {
 
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => petstoreFetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
-     export const useUpdatePet = (options?: Omit<reactQuery.UseMutationOptions<string, UpdatePetError, UpdatePetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = usePetstoreQueryContext();
-         return reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
-             mutationFn: (variables: UpdatePetVariables) => fetchUpdatePet({ ...fetcherOptions, ...variables }),
-             ...options
-         });
-     };
+     export const useUpdatePet = (options?: UseMutationOptions<string, UpdatePetError, UpdatePetVariables>) => reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
+         mutationKey: ["updatePet"],
+         mutationFn: (variables: UpdatePetVariables) => { const operation: MutationOperation = { method: "put", path: "/pet/{petId}", operationId: "updatePet", variables }, { fetcherOptions } = usePetstoreMutationContext(operation, options); return fetchUpdatePet({ ...fetcherOptions, ...variables }); },
+         ...options
+     });
      
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
+
      export type QueryOperation = {
          path: string;
          operationId: never;
          variables: unknown;
+     };
+     
+     export type MutationOperation = {
+         method: "put";
+         path: "/pet/{petId}";
+         operationId: "updatePet";
+         variables: UpdatePetVariables;
      };
      "
     `);
@@ -1434,6 +1527,7 @@ describe("generateReactQueryComponents", () => {
       * @version 1.0.0
       */
      import * as reactQuery from "@tanstack/react-query";
+     import { useMutationContext } from "./context";
      import type * as Fetcher from "./fetcher";
      import { fetch } from "./fetcher";
      import type * as RequestBodies from "./petstoreRequestBodies";
@@ -1451,22 +1545,29 @@ describe("generateReactQueryComponents", () => {
 
      export const fetchUpdatePet = (variables: UpdatePetVariables, signal?: AbortSignal) => fetch<string, UpdatePetError, RequestBodies.UpdatePetRequestBody, {}, {}, UpdatePetPathParams>({ url: "/pet/{petId}", method: "put", ...variables, signal });
 
-     export const useUpdatePet = (options?: Omit<reactQuery.UseMutationOptions<string, UpdatePetError, UpdatePetVariables>, "mutationFn">) => {
-         const { fetcherOptions } = useQueryContext();
-         return reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
-             mutationFn: (variables: UpdatePetVariables) => fetchUpdatePet({ ...fetcherOptions, ...variables }),
-             ...options
-         });
-     };
-     
+     export const useUpdatePet = (options?: UseMutationOptions<string, UpdatePetError, UpdatePetVariables>) => reactQuery.useMutation<string, UpdatePetError, UpdatePetVariables>({
+         mutationKey: ["updatePet"],
+         mutationFn: (variables: UpdatePetVariables) => { const operation: MutationOperation = { method: "put", path: "/pet/{petId}", operationId: "updatePet", variables }, { fetcherOptions } = useMutationContext(operation, options); return fetchUpdatePet({ ...fetcherOptions, ...variables }); },
+         ...options
+     });
+
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
+     
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
 
      export type QueryOperation = {
          path: string;
          operationId: never;
          variables: unknown;
+     };
+     
+     export type MutationOperation = {
+         method: "put";
+         path: "/pet/{petId}";
+         operationId: "updatePet";
+         variables: UpdatePetVariables;
      };
      "
     `);
@@ -1556,8 +1657,8 @@ describe("generateReactQueryComponents", () => {
      /**
       * Get all the pets
       */
-     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
-         queryKey: queryKeyFn({ path: "/pets", operationId: "listPets", variables }, fetcherOptions),
+     export const useListPets = <TData = ListPetsResponse>(variables: ListPetsVariables, options?: UseQueryOptions<ListPetsResponse, ListPetsError, TData>) => { const operation: QueryOperation = { path: "/pets", operationId: "listPets", variables }; const { fetcherOptions, queryOptions, queryKeyFn } = usePetstoreQueryContext(operation, options); return reactQuery.useQuery<ListPetsResponse, ListPetsError, TData>({
+         queryKey: queryKeyFn(operation, fetcherOptions),
          queryFn: ({ signal }) => fetchListPets({ ...fetcherOptions, ...variables }, signal),
          ...options,
          ...queryOptions
@@ -1566,11 +1667,20 @@ describe("generateReactQueryComponents", () => {
      export type UseQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn">;
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
+     
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
 
      export type QueryOperation = {
          path: "/pets";
          operationId: "listPets";
          variables: ListPetsVariables;
+     };
+     
+     export type MutationOperation = {
+         method: string;
+         path: string;
+         operationId: never;
+         variables: unknown;
      };
      "
     `);
@@ -1659,10 +1769,19 @@ it("should generate a useInfiniteQuery wrapper (no parameters)", async () => {
 
      export type UseInfiniteQueryOptions<TQueryFnData, TError, TData> = Omit<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "queryKey" | "queryFn" | "getNextPageParam" | "initialPageParam"> & Partial<Pick<reactQuery.UseInfiniteQueryOptions<TQueryFnData, TError, TData>, "getNextPageParam" | "initialPageParam">>;
 
+     export type UseMutationOptions<TData, TError, TVariables, TContext = unknown> = Omit<reactQuery.UseMutationOptions<TData, TError, TVariables, TContext>, "mutationFn">;
+
      export type QueryOperation = {
          path: "/pets";
          operationId: "listPets";
          variables: ListPetsVariables;
+     };
+     
+     export type MutationOperation = {
+         method: string;
+         path: string;
+         operationId: never;
+         variables: unknown;
      };
      "
     `);

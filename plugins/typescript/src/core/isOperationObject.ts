@@ -9,5 +9,8 @@ export const isOperationObject = (
   obj: any,
 ): obj is OperationObject & {
   operationId: string;
-  "x-openapi-codegen-component"?: "useQuery" | "useMutate" | "useInfiniteQuery";
+  "x-openapi-codegen-component"?:
+    | "useQuery"
+    | "useMutation"
+    | "useInfiniteQuery";
 } => typeof obj === "object" && typeof (obj as any).operationId === "string";

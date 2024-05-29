@@ -743,7 +743,7 @@ describe("generateReactQueryFunctions", () => {
         "/pet": {
           get: {
             operationId: "AddPet",
-            "x-openapi-codegen-component": "useMutate",
+            "x-openapi-codegen-component": "useMutation",
             requestBody: {
               content: {
                 "application/json": {

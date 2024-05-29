@@ -26,19 +26,19 @@ export const determineComponentForOperations = (
             openAPIDocument,
           );
 
-          const component: "useQuery" | "useMutate" | "useInfiniteQuery" =
+          const component: "useQuery" | "useMutation" | "useInfiniteQuery" =
             operation["x-openapi-codegen-component"] ||
             (verb === "get"
               ? isPaginated
                 ? "useInfiniteQuery"
                 : "useQuery"
-              : "useMutate");
+              : "useMutation");
 
           if (
-            !["useQuery", "useMutate", "useInfiniteQuery"].includes(component)
+            !["useQuery", "useMutation", "useInfiniteQuery"].includes(component)
           ) {
             throw new Error(`[x-openapi-codegen-component] Invalid value for ${operation.operationId} operation
-          Valid options: "useMutate", "useQuery", "useInfiniteQuery"`);
+          Valid options: "useMutation", "useQuery", "useInfiniteQuery"`);
           }
 
           if (component === "useInfiniteQuery" && !isPaginated) {

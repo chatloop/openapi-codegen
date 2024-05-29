@@ -22,7 +22,7 @@ export const forceReactQueryComponent = <
   /**
    * Component to use
    */
-  component: "useMutate" | "useQuery" | "useInfiniteQuery";
+  component: "useMutation" | "useQuery" | "useInfiniteQuery";
 }) => {
   let extensionPaths: string[] = [];
 

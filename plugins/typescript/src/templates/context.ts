@@ -1,8 +1,14 @@
 import { pascal } from "case";
 
 export const getContext = (prefix: string, componentsFile: string) =>
-  `import type { QueryKey, UseQueryOptions } from "@tanstack/react-query";
-  import { QueryOperation, UseInfiniteQueryOptions } from './${componentsFile}';
+  `import type { QueryKey } from "@tanstack/react-query";
+  import {
+    QueryOperation,
+    MutationOperation,
+    UseQueryOptions,
+    UseInfiniteQueryOptions,
+    UseMutationOptions
+  } from './${componentsFile}';
   
   export type ${pascal(prefix)}Context = {
     fetcherOptions: {
@@ -53,10 +59,22 @@ export const getContext = (prefix: string, componentsFile: string) =>
     ) => TVariables
   }
 
+  export type ${pascal(prefix)}MutationContext = {
+    fetcherOptions: {
+      /**
+       * Headers to inject in the fetcher
+       */
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      headers?: {}
+      /**
+       * Query params to inject in the fetcher
+       */
+      // eslint-disable-next-line @typescript-eslint/ban-types
+      queryParams?: {}
+    }
+  }
   /**
-   * Context injected into every react-query hook wrappers
-   * 
-   * @param _queryOptions options from the useQuery wrapper
+   * Context injected into every react-query useQuery hook wrapper
    */
    export function use${pascal(prefix)}QueryContext<
      TQueryFnData = unknown,
@@ -64,6 +82,7 @@ export const getContext = (prefix: string, componentsFile: string) =>
      TData = TQueryFnData,
      TQueryKey extends QueryKey = QueryKey
    >(
+     operation: QueryOperation,
      _queryOptions?: Omit<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, 'queryKey' | 'queryFn'>
    ): ${pascal(prefix)}Context {
       return {
@@ -73,7 +92,10 @@ export const getContext = (prefix: string, componentsFile: string) =>
     }
   }
   
-  export function useInfiniteQueryContext<
+  /**
+   * Context injected into every react-query useInfiniteQuery hook wrapper
+   */
+  export function use${pascal(prefix)}InfiniteQueryContext<
     TQueryFnData,
     TError,
     TData
@@ -115,6 +137,22 @@ export const getContext = (prefix: string, componentsFile: string) =>
       }
     }
   }
+  
+  /**
+ * Context injected into every react-query useMutation hook wrapper
+ */
+export function use${pascal(prefix)}MutationContext<
+  TQueryFnData = unknown,
+  TError = unknown,
+  TVariables = unknown
+>(
+  operation: MutationOperation,
+  mutationOptions?: UseMutationOptions<TQueryFnData, TError, TVariables>
+): MutationContext {
+  return {
+    fetcherOptions: globalFetcherOptions
+  }
+}
 
   export const queryKeyFn = (operation: QueryOperation, fetcherOptions: Context['fetcherOptions']) => {
     const queryKey: unknown[] = hasPathParams(operation)

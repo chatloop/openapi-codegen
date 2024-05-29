@@ -4,7 +4,7 @@ import {
 } from "../core/getErrorResponseType";
 
 export const getUtils = () =>
-  `import { TJsonApiData } from 'jsona/lib/JsonaTypes'
+  `import { TAnyKeyValueObject, TJsonApiData } from 'jsona/lib/JsonaTypes'
 import { InfiniteData } from '@tanstack/react-query'
 import { Jsona } from 'jsona'
 
@@ -19,11 +19,11 @@ export type ${clientErrorStatus} = Exclude<ComputeRange<500>[number], ComputeRan
 export type ${serverErrorStatus} = Exclude<ComputeRange<600>[number], ComputeRange<500>[number]>;
 
 /**
- Extract the element of an array that also works for array union.
-
- Returns \`never\` if T is not an array.
-
- It creates a type-safe way to access the element type of \`unknown\` type.
+ * Extract the element of an array that also works for array union.
+ *
+ * Returns \`never\` if T is not an array.
+ * 
+ * It creates a type-safe way to access the element type of \`unknown\` type.
  */
 export type ArrayElement<T> = T extends readonly unknown[] ? T[0] : never
 
@@ -152,6 +152,7 @@ export type DeserializedJsonApiResource<
 > = {
   id: Resource['id']
   type: Resource['type']
+  links?: Resource['links']
 } & Required<Resource['attributes']> & {
     [Relationship in IncludesForResource<Included, Resource>]: RelatedResource<
       Relationship,
@@ -191,21 +192,19 @@ export const deserializeResource = <
   Resource extends keyof TResourceMap,
   Included extends string,
   TResourceMap extends IResourceMap
->(data: {
+>(data?: {
   data: TResourceMap[Resource]
   included?: TJsonApiData[]
 }): DeserializedJsonApiResource<
   TResourceMap[Resource],
   Included,
   TResourceMap
-> => {
-  return jsona.deserialize(
-    data
-  ) as unknown as DeserializedJsonApiResource<
+>|undefined => {
+  return data !== undefined ? jsona.deserialize(data) as unknown as DeserializedJsonApiResource<
     TResourceMap[Resource],
     Included,
     TResourceMap
-  >
+  > : undefined
 }
 
 /**
@@ -257,5 +256,19 @@ export const deserializeInfiniteResourceCollection = <
     Included,
     TResourceMap
   >[]
+}
+
+export const serializeResource = <
+  Resource extends string,
+  TData extends TAnyKeyValueObject
+>(
+  type: Resource,
+  data: TData
+) => {
+  return jsona.serialize({
+    stuff: { type, ...data }
+  }) as unknown as {
+    data: { type: Resource; attributes: TData }
+  }
 }
 `;

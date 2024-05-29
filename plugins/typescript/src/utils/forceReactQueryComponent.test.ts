@@ -5,19 +5,19 @@ describe("forceReactQueryComponent", () => {
   it("should add the extension to the targeted operationId", () => {
     const updatedOpenAPIDocument = forceReactQueryComponent({
       openAPIDocument: petstore,
-      component: "useMutate",
+      component: "useMutation",
       operationIdMatcher: "findPets",
     });
 
     expect(
       updatedOpenAPIDocument.paths["/pets"].get["x-openapi-codegen-component"],
-    ).toBe("useMutate");
+    ).toBe("useMutation");
   });
   it("should throw if the operationId is not found", () => {
     expect(() =>
       forceReactQueryComponent({
         openAPIDocument: petstore,
-        component: "useMutate",
+        component: "useMutation",
         operationIdMatcher: "notFound",
       }),
     ).toThrow(
@@ -29,7 +29,7 @@ describe("forceReactQueryComponent", () => {
     const originalDocument = petstore;
     forceReactQueryComponent({
       openAPIDocument: originalDocument,
-      component: "useMutate",
+      component: "useMutation",
       operationIdMatcher: "findPets",
     });
 

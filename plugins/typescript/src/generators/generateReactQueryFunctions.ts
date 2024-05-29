@@ -146,15 +146,15 @@ export const generateReactQueryFunctions = async (
 
           const operationFetcherFnName = `fetch${c.pascal(operationId)}`;
           const operationQueryFnName = `${c.pascal(operationId)}Query`;
-          const component: "useQuery" | "useMutate" | "useInfiniteQuery" =
+          const component: "useQuery" | "useMutation" | "useInfiniteQuery" =
             operation["x-openapi-codegen-component"] ||
-            (verb === "get" ? "useQuery" : "useMutate");
+            (verb === "get" ? "useQuery" : "useMutation");
 
           if (
-            !["useQuery", "useMutate", "useInfiniteQuery"].includes(component)
+            !["useQuery", "useMutation", "useInfiniteQuery"].includes(component)
           ) {
             throw new Error(`[x-openapi-codegen-component] Invalid value for ${operation.operationId} operation
-          Valid options: "useMutate", "useQuery", "useInfiniteQuery"`);
+          Valid options: "useMutation", "useQuery", "useInfiniteQuery"`);
           }
 
           if (component === "useQuery") {

@@ -63,7 +63,7 @@ export const getJsonApiResponseResource = (
   return resourceType;
 };
 
-export const getJsonApiResourceType = (
+const getJsonApiResourceType = (
   schema: SchemaObject,
   openApiDocument: OpenAPIObject,
 ): JsonApiResponseResource | undefined => {
