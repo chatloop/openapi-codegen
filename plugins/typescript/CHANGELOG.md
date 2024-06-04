@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.2](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.1.1...openapi-codegen-typescript-v9.1.2) (2024-06-04)
+
+
+### Bug Fixes
+
+* simplify resource useMutation hooks, dont alter variables type ([a82a244](https://github.com/chatloop/openapi-codegen/commit/a82a24480d3042f32bdbbe79bd38e409f324cc02))
+
 ## [9.1.1](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.1.0...openapi-codegen-typescript-v9.1.1) (2024-05-29)
 
 
