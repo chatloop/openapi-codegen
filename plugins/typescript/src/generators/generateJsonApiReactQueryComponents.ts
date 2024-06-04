@@ -135,12 +135,14 @@ export const generateJsonApiReactQueryComponents = async (
         if (resourceType === undefined) {
           return;
         }
-        resources[resourceType] = f.createTypeReferenceNode(
-          f.createQualifiedName(
-            f.createIdentifier("Schemas"),
-            f.createIdentifier(c.pascal(name)),
-          ),
-        );
+        if (resources[resourceType] === undefined) {
+          resources[resourceType] = f.createTypeReferenceNode(
+            f.createQualifiedName(
+              f.createIdentifier("Schemas"),
+              f.createIdentifier(c.pascal(name)),
+            ),
+          );
+        }
       },
     );
   if (Object.keys(resources).length === 0) {
@@ -434,64 +436,6 @@ const createMutationHook = ({
 }) => {
   const nodes: ts.Node[] = [];
 
-  const requestBodyIdentifier = c.pascal(`${operation.operationId}RequestBody`);
-
-  if (requestResourceType !== undefined) {
-    nodes.push(
-      f.createTypeAliasDeclaration(
-        [f.createModifier(ts.SyntaxKind.ExportKeyword)],
-        f.createIdentifier(variablesType),
-        undefined,
-        f.createIntersectionTypeNode([
-          f.createTypeReferenceNode(f.createIdentifier("Omit"), [
-            f.createTypeReferenceNode(`Components.${variablesType}`),
-            f.createLiteralTypeNode(f.createStringLiteral("body")),
-          ]),
-          f.createTypeLiteralNode([
-            f.createPropertySignature(
-              undefined,
-              f.createIdentifier("body"),
-              undefined,
-              f.createIndexedAccessTypeNode(
-                f.createIndexedAccessTypeNode(
-                  f.createTypeReferenceNode(
-                    `Components.${requestBodyIdentifier}`,
-                  ),
-                  f.createLiteralTypeNode(f.createStringLiteral("data")),
-                ),
-                f.createLiteralTypeNode(f.createStringLiteral("attributes")),
-              ),
-            ),
-          ]),
-        ]),
-      ),
-    );
-  }
-
-  const createSerializedVariablesDeclaration = () =>
-    f.createVariableDeclaration(
-      "serializedVariables",
-      undefined,
-      undefined,
-      f.createObjectLiteralExpression([
-        f.createSpreadAssignment(f.createIdentifier("variables")),
-        f.createPropertyAssignment(
-          "body",
-          f.createCallExpression(
-            f.createIdentifier("Utils.serializeResource"),
-            undefined,
-            [
-              f.createStringLiteral(requestResourceType!.resourceType),
-              f.createPropertyAccessExpression(
-                f.createIdentifier("variables"),
-                f.createIdentifier("body"),
-              ),
-            ],
-          ),
-        ),
-      ]),
-    );
-
   const operationDeclaration = (variables: string) =>
     f.createVariableDeclaration(
       "operation",
@@ -514,95 +458,13 @@ const createMutationHook = ({
   const useMutationCall = requestResourceType
     ? f.createCallExpression(
         f.createPropertyAccessExpression(
-          f.createIdentifier("reactQuery"),
-          f.createIdentifier("useMutation"),
+          f.createIdentifier("Components"),
+          f.createIdentifier(name),
         ),
-        [
-          f.createTypeReferenceNode(`Components.${dataType}`),
-          f.createTypeReferenceNode(`Components.${errorType}`),
-          f.createTypeReferenceNode(variablesType),
-        ],
+        undefined,
         [
           f.createObjectLiteralExpression(
             [
-              f.createPropertyAssignment(
-                "mutationKey",
-                f.createArrayLiteralExpression([
-                  f.createStringLiteral(operationId),
-                ]),
-              ),
-              f.createPropertyAssignment(
-                "mutationFn",
-                f.createArrowFunction(
-                  undefined,
-                  undefined,
-                  [
-                    f.createParameterDeclaration(
-                      undefined,
-                      undefined,
-                      f.createIdentifier("variables"),
-                      undefined,
-                      f.createTypeReferenceNode(variablesType),
-                      undefined,
-                    ),
-                  ],
-                  undefined,
-                  f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                  f.createBlock([
-                    f.createVariableStatement(
-                      undefined,
-                      f.createVariableDeclarationList(
-                        [
-                          createSerializedVariablesDeclaration(),
-                          operationDeclaration("serializedVariables"),
-                          f.createVariableDeclaration(
-                            f.createObjectBindingPattern([
-                              f.createBindingElement(
-                                undefined,
-                                undefined,
-                                f.createIdentifier("fetcherOptions"),
-                                undefined,
-                              ),
-                            ]),
-                            undefined,
-                            undefined,
-                            f.createCallExpression(
-                              f.createIdentifier(contextHookName),
-                              undefined,
-                              [
-                                f.createIdentifier("operation"),
-                                f.createIdentifier("options"),
-                              ],
-                            ),
-                          ),
-                        ],
-                        ts.NodeFlags.Const,
-                      ),
-                    ),
-                    f.createReturnStatement(
-                      f.createCallExpression(
-                        f.createIdentifier(
-                          `Components.${operationFetcherFnName}`,
-                        ),
-                        undefined,
-                        [
-                          f.createObjectLiteralExpression(
-                            [
-                              f.createSpreadAssignment(
-                                f.createIdentifier("fetcherOptions"),
-                              ),
-                              f.createSpreadAssignment(
-                                f.createIdentifier("serializedVariables"),
-                              ),
-                            ],
-                            false,
-                          ),
-                        ],
-                      ),
-                    ),
-                  ]),
-                ),
-              ),
               f.createPropertyAssignment(
                 "onMutate",
                 f.createArrowFunction(
@@ -625,8 +487,7 @@ const createMutationHook = ({
                       undefined,
                       f.createVariableDeclarationList(
                         [
-                          createSerializedVariablesDeclaration(),
-                          operationDeclaration("serializedVariables"),
+                          operationDeclaration("variables"),
                           f.createVariableDeclaration(
                             f.createObjectBindingPattern([
                               f.createBindingElement(
@@ -705,8 +566,7 @@ const createMutationHook = ({
                       undefined,
                       f.createVariableDeclarationList(
                         [
-                          createSerializedVariablesDeclaration(),
-                          operationDeclaration("serializedVariables"),
+                          operationDeclaration("variables"),
                           f.createVariableDeclaration(
                             f.createObjectBindingPattern([
                               f.createBindingElement(
@@ -984,11 +844,9 @@ const createMutationHook = ({
                       [
                         f.createTypeReferenceNode(`Components.${dataType}`),
                         f.createTypeReferenceNode(`Components.${errorType}`),
-                        requestResourceType
-                          ? f.createTypeReferenceNode(variablesType)
-                          : f.createTypeReferenceNode(
-                              `Components.${variablesType}`,
-                            ),
+                        f.createTypeReferenceNode(
+                          `Components.${variablesType}`,
+                        ),
                       ],
                     ),
                     f.createLiteralTypeNode(

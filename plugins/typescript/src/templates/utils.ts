@@ -4,7 +4,7 @@ import {
 } from "../core/getErrorResponseType";
 
 export const getUtils = () =>
-  `import { TAnyKeyValueObject, TJsonApiData } from 'jsona/lib/JsonaTypes'
+  `import { TJsonApiData } from 'jsona/lib/JsonaTypes'
 import { InfiniteData } from '@tanstack/react-query'
 import { Jsona } from 'jsona'
 
@@ -259,16 +259,17 @@ export const deserializeInfiniteResourceCollection = <
 }
 
 export const serializeResource = <
-  Resource extends string,
-  TData extends TAnyKeyValueObject
+  Resource extends { id?: string; type: string },
+  Type extends string = Resource['type']
 >(
-  type: Resource,
-  data: TData
+  resource: Resource
 ) => {
   return jsona.serialize({
-    stuff: { type, ...data }
-  }) as unknown as {
-    data: { type: Resource; attributes: TData }
+    stuff: resource
+  }) as {
+    data: Resource['id'] extends undefined
+      ? { type: Type; attributes: Omit<Resource, 'type'> }
+      : { id: Resource['id']; type: Type; attributes: Omit<Resource, 'type'> }
   }
 }
 `;
