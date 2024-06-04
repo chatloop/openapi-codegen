@@ -455,328 +455,176 @@ const createMutationHook = ({
       ]),
     );
 
-  const useMutationCall = requestResourceType
-    ? f.createCallExpression(
-        f.createPropertyAccessExpression(
-          f.createIdentifier("Components"),
-          f.createIdentifier(name),
-        ),
-        undefined,
+  const useMutationCall = f.createCallExpression(
+    f.createPropertyAccessExpression(
+      f.createIdentifier("Components"),
+      f.createIdentifier(name),
+    ),
+    undefined,
+    [
+      f.createObjectLiteralExpression(
         [
-          f.createObjectLiteralExpression(
-            [
-              f.createPropertyAssignment(
-                "onMutate",
-                f.createArrowFunction(
-                  undefined,
-                  undefined,
-                  [
-                    f.createParameterDeclaration(
-                      undefined,
-                      undefined,
-                      f.createIdentifier("variables"),
-                      undefined,
-                      undefined,
-                      undefined,
-                    ),
-                  ],
-                  undefined,
-                  f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                  f.createBlock([
-                    f.createVariableStatement(
-                      undefined,
-                      f.createVariableDeclarationList(
-                        [
-                          operationDeclaration("variables"),
-                          f.createVariableDeclaration(
-                            f.createObjectBindingPattern([
-                              f.createBindingElement(
-                                undefined,
-                                undefined,
-                                f.createIdentifier("onMutate"),
-                                undefined,
-                              ),
-                            ]),
-                            undefined,
-                            undefined,
-                            f.createCallExpression(
-                              f.createIdentifier(contextHookName),
-                              undefined,
-                              [
-                                f.createIdentifier("operation"),
-                                f.createIdentifier("options"),
-                              ],
-                            ),
-                          ),
-                        ],
-                        ts.NodeFlags.Const,
+          ...(verb === "patch"
+            ? [
+                f.createPropertyAssignment(
+                  "onMutate",
+                  f.createArrowFunction(
+                    undefined,
+                    undefined,
+                    [
+                      f.createParameterDeclaration(
+                        undefined,
+                        undefined,
+                        f.createIdentifier("variables"),
+                        undefined,
+                        undefined,
+                        undefined,
                       ),
-                    ),
-                    f.createIfStatement(
-                      f.createIdentifier("onMutate"),
-                      f.createBlock([
-                        f.createExpressionStatement(
-                          f.createCallExpression(
-                            f.createIdentifier("onMutate"),
-                            undefined,
-                            [f.createIdentifier("variables")],
-                          ),
-                        ),
-                      ]),
-                      undefined,
-                    ),
-                  ]),
-                ),
-              ),
-              f.createPropertyAssignment(
-                "onSuccess",
-                f.createArrowFunction(
-                  undefined,
-                  undefined,
-                  [
-                    f.createParameterDeclaration(
-                      undefined,
-                      undefined,
-                      f.createIdentifier("data"),
-                      undefined,
-                      undefined,
-                      undefined,
-                    ),
-                    f.createParameterDeclaration(
-                      undefined,
-                      undefined,
-                      f.createIdentifier("variables"),
-                      undefined,
-                      undefined,
-                      undefined,
-                    ),
-                    f.createParameterDeclaration(
-                      undefined,
-                      undefined,
-                      f.createIdentifier("context"),
-                      undefined,
-                      undefined,
-                      undefined,
-                    ),
-                  ],
-                  undefined,
-                  f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                  f.createBlock([
-                    f.createVariableStatement(
-                      undefined,
-                      f.createVariableDeclarationList(
-                        [
-                          operationDeclaration("variables"),
-                          f.createVariableDeclaration(
-                            f.createObjectBindingPattern([
-                              f.createBindingElement(
+                    ],
+                    undefined,
+                    f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                    f.createBlock([
+                      f.createVariableStatement(
+                        undefined,
+                        f.createVariableDeclarationList(
+                          [
+                            operationDeclaration("variables"),
+                            f.createVariableDeclaration(
+                              f.createObjectBindingPattern([
+                                f.createBindingElement(
+                                  undefined,
+                                  undefined,
+                                  f.createIdentifier("onMutate"),
+                                  undefined,
+                                ),
+                              ]),
+                              undefined,
+                              undefined,
+                              f.createCallExpression(
+                                f.createIdentifier(contextHookName),
                                 undefined,
-                                undefined,
-                                f.createIdentifier("onSuccess"),
-                                undefined,
+                                [
+                                  f.createIdentifier("operation"),
+                                  f.createIdentifier("options"),
+                                ],
                               ),
-                            ]),
-                            undefined,
-                            undefined,
-                            f.createCallExpression(
-                              f.createIdentifier(contextHookName),
-                              undefined,
-                              [
-                                f.createIdentifier("operation"),
-                                f.createIdentifier("options"),
-                              ],
                             ),
-                          ),
-                        ],
-                        ts.NodeFlags.Const,
-                      ),
-                    ),
-                    f.createIfStatement(
-                      f.createIdentifier("onSuccess"),
-                      f.createBlock([
-                        f.createExpressionStatement(
-                          f.createCallExpression(
-                            f.createIdentifier("onSuccess"),
-                            undefined,
-                            [
-                              f.createIdentifier("data"),
-                              f.createIdentifier("variables"),
-                              f.createIdentifier("context"),
-                              f.createIdentifier("queryClient"),
-                            ],
-                          ),
+                          ],
+                          ts.NodeFlags.Const,
                         ),
-                      ]),
-                      undefined,
-                    ),
-                  ]),
-                ),
-              ),
-              f.createSpreadAssignment(f.createIdentifier("options")),
-            ],
-            true,
-          ),
-        ],
-      )
-    : f.createCallExpression(
-        f.createPropertyAccessExpression(
-          f.createIdentifier("Components"),
-          f.createIdentifier(name),
-        ),
-        undefined,
-        [
-          f.createObjectLiteralExpression([
-            f.createPropertyAssignment(
-              "onMutate",
-              f.createArrowFunction(
-                undefined,
-                undefined,
-                [
-                  f.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    f.createIdentifier("variables"),
-                    undefined,
-                    undefined,
-                    undefined,
-                  ),
-                ],
-                undefined,
-                f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                f.createBlock([
-                  f.createVariableStatement(
-                    undefined,
-                    f.createVariableDeclarationList(
-                      [
-                        operationDeclaration("variables"),
-                        f.createVariableDeclaration(
-                          f.createObjectBindingPattern([
-                            f.createBindingElement(
-                              undefined,
-                              undefined,
+                      ),
+                      f.createIfStatement(
+                        f.createIdentifier("onMutate"),
+                        f.createBlock([
+                          f.createExpressionStatement(
+                            f.createCallExpression(
                               f.createIdentifier("onMutate"),
                               undefined,
+                              [f.createIdentifier("variables")],
                             ),
-                          ]),
-                          undefined,
-                          undefined,
-                          f.createCallExpression(
-                            f.createIdentifier(contextHookName),
-                            undefined,
-                            [
-                              f.createIdentifier("operation"),
-                              f.createIdentifier("options"),
-                            ],
                           ),
-                        ),
-                      ],
-                      ts.NodeFlags.Const,
-                    ),
-                  ),
-                  f.createIfStatement(
-                    f.createIdentifier("onMutate"),
-                    f.createBlock([
-                      f.createExpressionStatement(
-                        f.createCallExpression(
-                          f.createIdentifier("onMutate"),
-                          undefined,
-                          [f.createIdentifier("variables")],
-                        ),
+                        ]),
+                        undefined,
                       ),
                     ]),
-                    undefined,
                   ),
-                ]),
-              ),
-            ),
-            f.createPropertyAssignment(
-              "onSuccess",
-              f.createArrowFunction(
-                undefined,
-                undefined,
-                [
-                  f.createParameterDeclaration(
+                ),
+              ]
+            : []),
+          ...(verb === "post" || verb === "delete"
+            ? [
+                f.createPropertyAssignment(
+                  "onSuccess",
+                  f.createArrowFunction(
                     undefined,
                     undefined,
-                    f.createIdentifier("data"),
+                    [
+                      f.createParameterDeclaration(
+                        undefined,
+                        undefined,
+                        f.createIdentifier("data"),
+                        undefined,
+                        undefined,
+                        undefined,
+                      ),
+                      f.createParameterDeclaration(
+                        undefined,
+                        undefined,
+                        f.createIdentifier("variables"),
+                        undefined,
+                        undefined,
+                        undefined,
+                      ),
+                      f.createParameterDeclaration(
+                        undefined,
+                        undefined,
+                        f.createIdentifier("context"),
+                        undefined,
+                        undefined,
+                        undefined,
+                      ),
+                    ],
                     undefined,
-                    undefined,
-                    undefined,
-                  ),
-                  f.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    f.createIdentifier("variables"),
-                    undefined,
-                    undefined,
-                    undefined,
-                  ),
-                  f.createParameterDeclaration(
-                    undefined,
-                    undefined,
-                    f.createIdentifier("context"),
-                    undefined,
-                    undefined,
-                    undefined,
-                  ),
-                ],
-                undefined,
-                f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                f.createBlock([
-                  f.createVariableStatement(
-                    undefined,
-                    f.createVariableDeclarationList(
-                      [
-                        operationDeclaration("variables"),
-                        f.createVariableDeclaration(
-                          f.createObjectBindingPattern([
-                            f.createBindingElement(
+                    f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                    f.createBlock([
+                      f.createVariableStatement(
+                        undefined,
+                        f.createVariableDeclarationList(
+                          [
+                            operationDeclaration("variables"),
+                            f.createVariableDeclaration(
+                              f.createObjectBindingPattern([
+                                f.createBindingElement(
+                                  undefined,
+                                  undefined,
+                                  f.createIdentifier("onSuccess"),
+                                  undefined,
+                                ),
+                              ]),
                               undefined,
                               undefined,
+                              f.createCallExpression(
+                                f.createIdentifier(contextHookName),
+                                undefined,
+                                [
+                                  f.createIdentifier("operation"),
+                                  f.createIdentifier("options"),
+                                ],
+                              ),
+                            ),
+                          ],
+                          ts.NodeFlags.Const,
+                        ),
+                      ),
+                      f.createIfStatement(
+                        f.createIdentifier("onSuccess"),
+                        f.createBlock([
+                          f.createExpressionStatement(
+                            f.createCallExpression(
                               f.createIdentifier("onSuccess"),
                               undefined,
+                              [
+                                f.createIdentifier("data"),
+                                f.createIdentifier("variables"),
+                                f.createIdentifier("context"),
+                                f.createIdentifier("queryClient"),
+                              ],
                             ),
-                          ]),
-                          undefined,
-                          undefined,
-                          f.createCallExpression(
-                            f.createIdentifier(contextHookName),
-                            undefined,
-                            [
-                              f.createIdentifier("operation"),
-                              f.createIdentifier("options"),
-                            ],
                           ),
-                        ),
-                      ],
-                      ts.NodeFlags.Const,
-                    ),
-                  ),
-                  f.createIfStatement(
-                    f.createIdentifier("onSuccess"),
-                    f.createBlock([
-                      f.createExpressionStatement(
-                        f.createCallExpression(
-                          f.createIdentifier("onSuccess"),
-                          undefined,
-                          [
-                            f.createIdentifier("data"),
-                            f.createIdentifier("variables"),
-                            f.createIdentifier("context"),
-                            f.createIdentifier("queryClient"),
-                          ],
-                        ),
+                        ]),
+                        undefined,
                       ),
                     ]),
-                    undefined,
                   ),
-                ]),
-              ),
-            ),
-            f.createSpreadAssignment(f.createIdentifier("options")),
-          ]),
+                ),
+              ]
+            : []),
+          f.createSpreadAssignment(f.createIdentifier("options")),
         ],
-      );
+        true,
+      ),
+    ],
+  );
 
   if (operation.description) {
     nodes.push(f.createJSDocComment(operation.description.trim(), []));
@@ -785,26 +633,6 @@ const createMutationHook = ({
     operation,
     openApiDocument,
   );
-
-  if (responseResourceType === undefined && requestResourceType === undefined) {
-    nodes.push(
-      f.createVariableStatement(
-        [f.createModifier(ts.SyntaxKind.ExportKeyword)],
-        f.createVariableDeclarationList(
-          [
-            f.createVariableDeclaration(
-              f.createIdentifier(name),
-              undefined,
-              undefined,
-              f.createIdentifier(`Components.${name}`),
-            ),
-          ],
-          ts.NodeFlags.Const,
-        ),
-      ),
-    );
-    return nodes;
-  }
 
   nodes.push(
     f.createVariableStatement(
@@ -842,16 +670,34 @@ const createMutationHook = ({
                         f.createIdentifier("UseMutationOptions"),
                       ),
                       [
-                        f.createTypeReferenceNode(`Components.${dataType}`),
+                        responseResourceType
+                          ? f.createTypeReferenceNode(`Components.${dataType}`)
+                          : f.createToken(ts.SyntaxKind.UndefinedKeyword),
                         f.createTypeReferenceNode(`Components.${errorType}`),
                         f.createTypeReferenceNode(
                           `Components.${variablesType}`,
                         ),
                       ],
                     ),
-                    f.createLiteralTypeNode(
-                      f.createStringLiteral("mutationFn"),
-                    ),
+                    f.createUnionTypeNode([
+                      f.createLiteralTypeNode(
+                        f.createStringLiteral("mutationFn"),
+                      ),
+                      ...(verb === "patch"
+                        ? [
+                            f.createLiteralTypeNode(
+                              f.createStringLiteral("onMutate"),
+                            ),
+                          ]
+                        : []),
+                      ...(verb === "post" || verb === "delete"
+                        ? [
+                            f.createLiteralTypeNode(
+                              f.createStringLiteral("onSuccess"),
+                            ),
+                          ]
+                        : []),
+                    ]),
                   ]),
                   undefined,
                 ),
@@ -860,27 +706,31 @@ const createMutationHook = ({
               f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
               f.createBlock(
                 [
-                  f.createVariableStatement(
-                    undefined,
-                    f.createVariableDeclarationList(
-                      [
-                        f.createVariableDeclaration(
-                          f.createIdentifier("queryClient"),
+                  ...(verb === "post" || verb === "delete"
+                    ? [
+                        f.createVariableStatement(
                           undefined,
-                          undefined,
-                          f.createCallExpression(
-                            f.createPropertyAccessExpression(
-                              f.createIdentifier("reactQuery"),
-                              f.createIdentifier("useQueryClient"),
-                            ),
-                            undefined,
-                            undefined,
+                          f.createVariableDeclarationList(
+                            [
+                              f.createVariableDeclaration(
+                                f.createIdentifier("queryClient"),
+                                undefined,
+                                undefined,
+                                f.createCallExpression(
+                                  f.createPropertyAccessExpression(
+                                    f.createIdentifier("reactQuery"),
+                                    f.createIdentifier("useQueryClient"),
+                                  ),
+                                  undefined,
+                                  undefined,
+                                ),
+                              ),
+                            ],
+                            ts.NodeFlags.Const,
                           ),
                         ),
-                      ],
-                      ts.NodeFlags.Const,
-                    ),
-                  ),
+                      ]
+                    : []),
                   ...(responseResourceType
                     ? [
                         f.createVariableStatement(
