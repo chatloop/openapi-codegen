@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.3](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.1.2...openapi-codegen-typescript-v9.1.3) (2024-06-04)
+
+
+### Bug Fixes
+
+* simplify resource useMutation hooks, add onMutate or onSuccess conditionaly based on operation verb and prevent overriding in hook options ([f260c34](https://github.com/chatloop/openapi-codegen/commit/f260c343e8ffdcd34f7b6f18723fe8b05e601090))
+
 ## [9.1.2](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.1.1...openapi-codegen-typescript-v9.1.2) (2024-06-04)
 
 
