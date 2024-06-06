@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.1.4](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.1.3...openapi-codegen-typescript-v9.1.4) (2024-06-06)
+
+
+### Bug Fixes
+
+* deserialized resource toOne relationships should only be nullable if the spec says they are ([df8a0cc](https://github.com/chatloop/openapi-codegen/commit/df8a0cc6acec28b3c2d88bdc6ad67c6fc3df2fdb))
+
 ## [9.1.3](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.1.2...openapi-codegen-typescript-v9.1.3) (2024-06-04)
 
 
