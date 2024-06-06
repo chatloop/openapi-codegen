@@ -125,6 +125,8 @@ type IncludesForRelationship<
   Extract<Included, \`\${Extract<Relationship, string>}.\${string}\`>
 >
 
+type NullableIf<TData, A, B> = A extends B ? TData | null : TData
+
 /**
  * The deserialized Resource for a \`Relationship\` in the \`Parent\` resource with appropriate \`Included\` relationships nested
  */
@@ -135,10 +137,14 @@ type DeserializedJsonApiRelationship<
   TResourceMap extends IResourceMap
 > =
   RelatedResource<Relationship, Resource, TResourceMap> extends TJsonApiData
-    ? DeserializedJsonApiResource<
-        RelatedResource<Relationship, Resource, TResourceMap>,
-        IncludesForRelationship<Included, Relationship>,
-        TResourceMap
+    ? NullableIf<
+        DeserializedJsonApiResource<
+          RelatedResource<Relationship, Resource, TResourceMap>,
+          IncludesForRelationship<Included, Relationship>,
+          TResourceMap
+        >,
+        null,
+        RelationshipData<Relationship, Resource>
       >
     : never
 
@@ -160,11 +166,7 @@ export type DeserializedJsonApiResource<
       TResourceMap
     > extends TJsonApiData
       ? GetValueWithDefault<
-          GetValueWithDefault<
-            Resource['relationships'][Relationship],
-            'data',
-            never
-          >,
+          RelationshipData<Relationship, Resource>,
           'type',
           never
         > extends string
@@ -173,7 +175,7 @@ export type DeserializedJsonApiResource<
             Included,
             Relationship,
             TResourceMap
-          > | null
+          >
         : DeserializedJsonApiRelationship<
             Resource,
             Included,
