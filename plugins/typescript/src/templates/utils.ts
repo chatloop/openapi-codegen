@@ -274,4 +274,22 @@ export const serializeResource = <
       : { id: Resource['id']; type: Type; attributes: Omit<Resource, 'type'> }
   }
 }
+
+export const selectTotal = (
+  data: InfiniteData<{
+    meta: PaginationMeta
+  }>
+) => selectLatestTotal(data) ?? selectFirstTotal(data)
+
+const selectFirstTotal = (
+  data: InfiniteData<{
+    meta: PaginationMeta
+  }>
+): number | undefined => data.pages[0].meta.page?.total
+
+const selectLatestTotal = (
+  data: InfiniteData<{
+    meta: PaginationMeta
+  }>
+): number | undefined => data.pages[data.pages.length - 1].meta.page?.total
 `;
