@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.4.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.3.0...openapi-codegen-typescript-v9.4.0) (2024-06-10)
+
+
+### Features
+
+* add selectTotal util selector ([68383ec](https://github.com/chatloop/openapi-codegen/commit/68383eca519c131dd1d6a3d93cd237f4246e6708))
+
 ## [9.3.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.2.0...openapi-codegen-typescript-v9.3.0) (2024-06-10)
 
 
