@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.3.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.2.0...openapi-codegen-typescript-v9.3.0) (2024-06-10)
+
+
+### Features
+
+* allow select option on resource hooks ([e487839](https://github.com/chatloop/openapi-codegen/commit/e4878397b084edf1188bbbaaa88d979428d86250))
+
 ## [9.2.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.1.4...openapi-codegen-typescript-v9.2.0) (2024-06-10)
 
 
