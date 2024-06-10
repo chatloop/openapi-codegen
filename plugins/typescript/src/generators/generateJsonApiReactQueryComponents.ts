@@ -1009,17 +1009,14 @@ const createInfiniteQueryHook = ({
                   undefined,
                   f.createIdentifier("options"),
                   f.createToken(ts.SyntaxKind.QuestionToken),
-                  f.createTypeReferenceNode(f.createIdentifier("Omit"), [
-                    f.createTypeReferenceNode(
-                      "Components.UseInfiniteQueryOptions",
-                      [
-                        f.createTypeReferenceNode(`Components.${dataType}`),
-                        f.createTypeReferenceNode(`Components.${errorType}`),
-                        f.createTypeReferenceNode("TData"),
-                      ],
-                    ),
-                    f.createLiteralTypeNode(f.createStringLiteral("select")),
-                  ]),
+                  f.createTypeReferenceNode(
+                    "Components.UseInfiniteQueryOptions",
+                    [
+                      f.createTypeReferenceNode(`Components.${dataType}`),
+                      f.createTypeReferenceNode(`Components.${errorType}`),
+                      f.createTypeReferenceNode("TData"),
+                    ],
+                  ),
                 ),
               ],
               undefined,
