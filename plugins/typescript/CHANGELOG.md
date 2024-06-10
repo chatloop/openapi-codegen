@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.4.2](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.4.1...openapi-codegen-typescript-v9.4.2) (2024-06-10)
+
+
+### Bug Fixes
+
+* fix typo ([727d717](https://github.com/chatloop/openapi-codegen/commit/727d717dc27b6e03ed3ec8a613dcaa77c3679fa7))
+
 ## [9.4.1](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.4.0...openapi-codegen-typescript-v9.4.1) (2024-06-10)
 
 
