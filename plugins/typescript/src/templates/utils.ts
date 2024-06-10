@@ -275,7 +275,7 @@ export const serializeResource = <
   }
 }
 
-eexport const selectTotal = (
+export const selectTotal = (
   data: InfiniteData<{
     meta: {
       page: {
