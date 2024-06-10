@@ -275,21 +275,34 @@ export const serializeResource = <
   }
 }
 
-export const selectTotal = (
+eexport const selectTotal = (
   data: InfiniteData<{
-    meta: PaginationMeta
+    meta: {
+      page: {
+        total?: number
+      }
+    }
   }>
 ) => selectLatestTotal(data) ?? selectFirstTotal(data)
 
 const selectFirstTotal = (
   data: InfiniteData<{
-    meta: PaginationMeta
+    meta: {
+      page: {
+        total?: number
+      }
+    }
   }>
 ): number | undefined => data.pages[0].meta.page?.total
 
 const selectLatestTotal = (
   data: InfiniteData<{
-    meta: PaginationMeta
+    meta: {
+      page: {
+        total?: number
+      }
+    }
   }>
 ): number | undefined => data.pages[data.pages.length - 1].meta.page?.total
+
 `;
