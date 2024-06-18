@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.4.3](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.4.2...openapi-codegen-typescript-v9.4.3) (2024-06-18)
+
+
+### Bug Fixes
+
+* json api resource objects should not require `attributes` to be defined, one of `attributes`, `links` or `relationships` must be defined in order to differentiate from a resource identifier object however ([c4ce28b](https://github.com/chatloop/openapi-codegen/commit/c4ce28bb6e59bb6c77e36de61aad6b98ae09a970))
+
 ## [9.4.2](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.4.1...openapi-codegen-typescript-v9.4.2) (2024-06-10)
 
 
