@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.5.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.4.3...openapi-codegen-typescript-v9.5.0) (2024-07-05)
+
+
+### Features
+
+* add meta to deserialised resource type ([9d9dea0](https://github.com/chatloop/openapi-codegen/commit/9d9dea0af1442ff4da2d6574910da26d753b789a))
+
 ## [9.4.3](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.4.2...openapi-codegen-typescript-v9.4.3) (2024-06-18)
 
 
