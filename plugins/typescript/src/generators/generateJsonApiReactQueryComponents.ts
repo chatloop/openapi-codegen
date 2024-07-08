@@ -806,18 +806,18 @@ const createMutationHook = ({
                                 f.createTypeReferenceNode(
                                   f.createIdentifier("ResourceMap"),
                                 ),
-                                operationHasWithCounts
-                                  ? f.createIndexedAccessTypeNode(
-                                      f.createTypeReferenceNode(
-                                        f.createIdentifier("Counted"),
+                                ...(operationHasWithCounts
+                                  ? [
+                                      f.createIndexedAccessTypeNode(
+                                        f.createTypeReferenceNode(
+                                          f.createIdentifier("Counted"),
+                                        ),
+                                        f.createLiteralTypeNode(
+                                          f.createNumericLiteral("number"),
+                                        ),
                                       ),
-                                      f.createLiteralTypeNode(
-                                        f.createNumericLiteral("number"),
-                                      ),
-                                    )
-                                  : f.createLiteralTypeNode(
-                                      f.createStringLiteral(""),
-                                    ),
+                                    ]
+                                  : []),
                               ],
                               [
                                 f.createPropertyAccessExpression(
