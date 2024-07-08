@@ -1,5 +1,13 @@
 # Changelog
 
+## [9.6.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.5.0...openapi-codegen-typescript-v9.6.0) (2024-07-08)
+
+
+### Features
+
+* add meta to deserialised resource ([2161408](https://github.com/chatloop/openapi-codegen/commit/216140890c8dcbea14feb9bb6e218c71b3230681))
+* add withCount support to json:api resource deserialisation ([1f0e47f](https://github.com/chatloop/openapi-codegen/commit/1f0e47fc7beb5f43496666c86f479f6ddcdb7b36))
+
 ## [9.5.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.4.3...openapi-codegen-typescript-v9.5.0) (2024-07-05)
 
 
