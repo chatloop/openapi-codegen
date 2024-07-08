@@ -31,6 +31,7 @@ import {
 } from "../core/getJsonApiRequestResource";
 import { createNamedImport } from "../core/createNamedImport";
 import { camelizedPathParams } from "../core/camelizedPathParams";
+import { jsonApiOperationHasWithCounts } from "../core/jsonApiOperationHasWithCounts";
 
 export type Config = ConfigBase & {
   /**
@@ -633,6 +634,10 @@ const createMutationHook = ({
     operation,
     openApiDocument,
   );
+  const operationHasWithCounts = jsonApiOperationHasWithCounts(
+    operation,
+    openApiDocument,
+  );
 
   nodes.push(
     f.createVariableStatement(
@@ -645,16 +650,37 @@ const createMutationHook = ({
             undefined,
             f.createArrowFunction(
               undefined,
-              responseResourceType && operationHasIncludes
+              responseResourceType &&
+                (operationHasIncludes || operationHasWithCounts)
                 ? [
-                    f.createTypeParameterDeclaration(
-                      undefined,
-                      "Includes",
-                      f.createArrayTypeNode(
-                        f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
-                      ),
-                      f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
-                    ),
+                    ...(operationHasIncludes
+                      ? [
+                          f.createTypeParameterDeclaration(
+                            undefined,
+                            "Includes",
+                            f.createArrayTypeNode(
+                              f.createKeywordTypeNode(
+                                ts.SyntaxKind.StringKeyword,
+                              ),
+                            ),
+                            f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
+                          ),
+                        ]
+                      : []),
+                    ...(operationHasWithCounts
+                      ? [
+                          f.createTypeParameterDeclaration(
+                            undefined,
+                            "Counted",
+                            f.createArrayTypeNode(
+                              f.createKeywordTypeNode(
+                                ts.SyntaxKind.StringKeyword,
+                              ),
+                            ),
+                            f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
+                          ),
+                        ]
+                      : []),
                   ]
                 : undefined,
               [
@@ -780,6 +806,18 @@ const createMutationHook = ({
                                 f.createTypeReferenceNode(
                                   f.createIdentifier("ResourceMap"),
                                 ),
+                                operationHasWithCounts
+                                  ? f.createIndexedAccessTypeNode(
+                                      f.createTypeReferenceNode(
+                                        f.createIdentifier("Counted"),
+                                      ),
+                                      f.createLiteralTypeNode(
+                                        f.createNumericLiteral("number"),
+                                      ),
+                                    )
+                                  : f.createLiteralTypeNode(
+                                      f.createStringLiteral(""),
+                                    ),
                               ],
                               [
                                 f.createPropertyAccessExpression(
@@ -857,6 +895,14 @@ const createQueryHook = ({
                   ),
                   f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
                 ),
+                f.createTypeParameterDeclaration(
+                  undefined,
+                  "Counted",
+                  f.createArrayTypeNode(
+                    f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+                  ),
+                  f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
+                ),
               ],
               [
                 f.createParameterDeclaration(
@@ -923,6 +969,14 @@ const createQueryHook = ({
                             f.createTypeReferenceNode(
                               f.createIdentifier("ResourceMap"),
                             ),
+                            f.createIndexedAccessTypeNode(
+                              f.createTypeReferenceNode(
+                                f.createIdentifier("Counted"),
+                              ),
+                              f.createLiteralTypeNode(
+                                f.createNumericLiteral("number"),
+                              ),
+                            ),
                           ],
                           [f.createIdentifier("data")],
                         ),
@@ -986,6 +1040,14 @@ const createInfiniteQueryHook = ({
                 f.createTypeParameterDeclaration(
                   undefined,
                   "Includes",
+                  f.createArrayTypeNode(
+                    f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
+                  ),
+                  f.createKeywordTypeNode(ts.SyntaxKind.NeverKeyword),
+                ),
+                f.createTypeParameterDeclaration(
+                  undefined,
+                  "Counted",
                   f.createArrayTypeNode(
                     f.createKeywordTypeNode(ts.SyntaxKind.StringKeyword),
                   ),
@@ -1062,6 +1124,14 @@ const createInfiniteQueryHook = ({
                             f.createTypeReferenceNode(
                               f.createIdentifier("ResourceMap"),
                             ),
+                            f.createIndexedAccessTypeNode(
+                              f.createTypeReferenceNode(
+                                f.createIdentifier("Counted"),
+                              ),
+                              f.createLiteralTypeNode(
+                                f.createNumericLiteral("number"),
+                              ),
+                            ),
                           ],
                           [f.createIdentifier("data")],
                         ),
@@ -1086,7 +1156,12 @@ const createVariableType = (
   operation: OperationObject,
   openApiDocument: OpenAPIObject,
 ) => {
-  if (jsonApiOperationHasIncludes(operation, openApiDocument)) {
+  const hasIncludes = jsonApiOperationHasIncludes(operation, openApiDocument);
+  const hasWithCounts = jsonApiOperationHasWithCounts(
+    operation,
+    openApiDocument,
+  );
+  if (hasIncludes || hasWithCounts) {
     return f.createIntersectionTypeNode([
       f.createTypeReferenceNode(variablesType),
       f.createTypeLiteralNode([
@@ -1095,12 +1170,26 @@ const createVariableType = (
           "queryParams",
           f.createToken(ts.SyntaxKind.QuestionToken),
           f.createTypeLiteralNode([
-            f.createPropertySignature(
-              undefined,
-              "include",
-              f.createToken(ts.SyntaxKind.QuestionToken),
-              f.createTypeReferenceNode("Includes"),
-            ),
+            ...(hasIncludes
+              ? [
+                  f.createPropertySignature(
+                    undefined,
+                    "include",
+                    f.createToken(ts.SyntaxKind.QuestionToken),
+                    f.createTypeReferenceNode("Includes"),
+                  ),
+                ]
+              : []),
+            ...(hasWithCounts
+              ? [
+                  f.createPropertySignature(
+                    undefined,
+                    "withCount",
+                    f.createToken(ts.SyntaxKind.QuestionToken),
+                    f.createTypeReferenceNode("Counted"),
+                  ),
+                ]
+              : []),
           ]),
         ),
       ]),

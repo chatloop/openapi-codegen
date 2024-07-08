@@ -4,9 +4,9 @@ import {
 } from "../core/getErrorResponseType";
 
 export const getUtils = () =>
-  `import { TJsonApiData } from 'jsona/lib/JsonaTypes'
+  `import { TJsonApiData, TAnyKeyValueObject, TJsonaModel } from 'jsona/lib/JsonaTypes'
 import { InfiniteData } from '@tanstack/react-query'
-import { Jsona } from 'jsona'
+import { Jsona, JsonPropertiesMapper } from 'jsona'
 
 type ComputeRange<
  N extends number,
@@ -148,18 +148,20 @@ type DeserializedJsonApiRelationship<
       >
     : never
 
+type CountedRelationships<Counted extends string> = \`\${Counted}Count\`
+
 /**
  * The deserialized Resource for a \`Resource\` with the appropriate \`Included\` relationships nested
  */
 export type DeserializedJsonApiResource<
   Resource extends TJsonApiData,
   Included extends string,
-  TResourceMap extends IResourceMap
+  TResourceMap extends IResourceMap,
+  Counted extends string = never,
 > = {
   id: Resource['id']
   type: Resource['type']
-  links: Resource['links']
-  meta: Resource['meta']
+  links?: Resource['links']
 } & Required<Resource['attributes']> & {
     [Relationship in IncludesForResource<Included, Resource>]: RelatedResource<
       Relationship,
@@ -184,9 +186,25 @@ export type DeserializedJsonApiResource<
             TResourceMap
           >[]
       : unknown
+  } & {
+    [CountedRelationship in CountedRelationships<Counted>]: number
   }
 
-const jsona = new Jsona()
+class ChatloopJsonPropertiesMapper extends JsonPropertiesMapper {
+  setRelationshipMeta(
+    model: TJsonaModel,
+    relationName: string,
+    meta: TAnyKeyValueObject
+  ) {
+    if ('count' in meta) {
+      model[\`\${relationName}Count\`] = meta.count
+    }
+  }
+}
+
+const jsona = new Jsona({
+  jsonPropertiesMapper: new ChatloopJsonPropertiesMapper(),
+})
 
 /**
  * Deserialize a JSON:API single resource response to a typed resource object with the included relationships nested
@@ -194,20 +212,27 @@ const jsona = new Jsona()
 export const deserializeResource = <
   Resource extends keyof TResourceMap,
   Included extends string,
-  TResourceMap extends IResourceMap
+  TResourceMap extends IResourceMap,
+  Counted extends string = never,
 >(data?: {
   data: TResourceMap[Resource]
   included?: TJsonApiData[]
-}): DeserializedJsonApiResource<
-  TResourceMap[Resource],
-  Included,
-  TResourceMap
->|undefined => {
-  return data !== undefined ? jsona.deserialize(data) as unknown as DeserializedJsonApiResource<
-    TResourceMap[Resource],
-    Included,
-    TResourceMap
-  > : undefined
+}):
+  | DeserializedJsonApiResource<
+      TResourceMap[Resource],
+      Included,
+      TResourceMap,
+      Counted
+    >
+  | undefined => {
+  return data !== undefined
+    ? (jsona.deserialize(data) as unknown as DeserializedJsonApiResource<
+        TResourceMap[Resource],
+        Included,
+        TResourceMap,
+        Counted
+      >)
+    : undefined
 }
 
 /**
@@ -217,21 +242,22 @@ export const deserializeResource = <
 export const deserializeResourceCollection = <
   Resource extends keyof TResourceMap,
   Included extends string,
-  TResourceMap extends IResourceMap
+  TResourceMap extends IResourceMap,
+  Counted extends string = never,
 >(data: {
   data: TResourceMap[Resource][]
   included?: TJsonApiData[]
 }): DeserializedJsonApiResource<
   TResourceMap[Resource],
   Included,
-  TResourceMap
+  TResourceMap,
+  Counted
 >[] => {
-  return jsona.deserialize(
-    data
-  ) as unknown as DeserializedJsonApiResource<
+  return jsona.deserialize(data) as unknown as DeserializedJsonApiResource<
     TResourceMap[Resource],
     Included,
-    TResourceMap
+    TResourceMap,
+    Counted
   >[]
 }
 
@@ -241,7 +267,8 @@ export const deserializeResourceCollection = <
 export const deserializeInfiniteResourceCollection = <
   Resource extends keyof TResourceMap,
   Included extends string,
-  TResourceMap extends IResourceMap
+  TResourceMap extends IResourceMap,
+  Counted extends string = never,
 >(
   data: InfiniteData<{
     data: TResourceMap[Resource][]
@@ -250,14 +277,16 @@ export const deserializeInfiniteResourceCollection = <
 ): DeserializedJsonApiResource<
   TResourceMap[Resource],
   Included,
-  TResourceMap
+  TResourceMap,
+  Counted
 >[] => {
   return data.pages.flatMap(page => {
     return jsona.deserialize(page)
   }) as unknown as DeserializedJsonApiResource<
     TResourceMap[Resource],
     Included,
-    TResourceMap
+    TResourceMap,
+    Counted
   >[]
 }
 
@@ -272,7 +301,7 @@ export const serializeResource = <
   }) as {
     data: Resource['id'] extends undefined
       ? { type: Type; attributes: Omit<Resource, 'type'> }
-      : { id: Resource['id']; type: Type; attributes: Omit<Resource, 'type'> }
+      : { id: Resource['id']; type: Type; attributes: Omit<Resource, 'id'|'type'> }
   }
 }
 
