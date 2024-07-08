@@ -161,7 +161,8 @@ export type DeserializedJsonApiResource<
 > = {
   id: Resource['id']
   type: Resource['type']
-  links?: Resource['links']
+  links: Resource['links']
+  meta: Resource['meta']
 } & Required<Resource['attributes']> & {
     [Relationship in IncludesForResource<Included, Resource>]: RelatedResource<
       Relationship,
