@@ -309,16 +309,18 @@ export const generateJsonApiReactQueryComponents = async (
           ),
         ]),
       ],
-      Object.entries(operationResources).map(([operationId, resource]) =>
-        f.createPropertySignature(
-          undefined,
-          isValidPropertyName(operationId)
-            ? operationId
-            : f.createStringLiteral(operationId),
-          undefined,
-          resources[resource],
+      Object.entries(operationResources)
+        .filter((op) => !!resources[op[1]])
+        .map(([operationId, resource]) =>
+          f.createPropertySignature(
+            undefined,
+            isValidPropertyName(operationId)
+              ? operationId
+              : f.createStringLiteral(operationId),
+            undefined,
+            resources[resource],
+          ),
         ),
-      ),
     ),
   );
 
