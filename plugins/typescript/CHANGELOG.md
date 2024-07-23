@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.6.1](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.0...openapi-codegen-typescript-v9.6.1) (2024-07-23)
+
+
+### Bug Fixes
+
+* inline resource schema cannot be mapped to operations ([517b62b](https://github.com/chatloop/openapi-codegen/commit/517b62bf5210752b9cd9f89b6ea4d22e222be7b9))
+
 ## [9.6.0](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.5.0...openapi-codegen-typescript-v9.6.0) (2024-07-08)
 
 
