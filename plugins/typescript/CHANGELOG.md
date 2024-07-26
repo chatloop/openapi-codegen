@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.6.3](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.2...openapi-codegen-typescript-v9.6.3) (2024-07-26)
+
+
+### Bug Fixes
+
+* extract union type Nodes too so we have a common identifier ([6dc45db](https://github.com/chatloop/openapi-codegen/commit/6dc45dbe143b74079100676806424da34cc0baa1))
+
 ## [9.6.2](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.1...openapi-codegen-typescript-v9.6.2) (2024-07-26)
 
 
