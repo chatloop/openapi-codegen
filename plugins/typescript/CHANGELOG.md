@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.6.2](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.1...openapi-codegen-typescript-v9.6.2) (2024-07-26)
+
+
+### Bug Fixes
+
+* correctly type response when there is a 204 in addition to another 2xx response ([82a7fba](https://github.com/chatloop/openapi-codegen/commit/82a7fba13a64c56b783a3a1c355035b04217c55b))
+
 ## [9.6.1](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.0...openapi-codegen-typescript-v9.6.1) (2024-07-23)
 
 
