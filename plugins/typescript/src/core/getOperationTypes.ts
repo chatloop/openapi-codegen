@@ -146,6 +146,18 @@ export const getOperationTypes = ({
 
   errorType = f.createTypeReferenceNode(errorTypeIdentifier);
 
+  if (has204) {
+    dataType = ts.isUnionTypeNode(dataType)
+      ? f.createUnionTypeNode([
+          ...dataType.types,
+          f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+        ])
+      : f.createUnionTypeNode([
+          dataType,
+          f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+        ]);
+  }
+
   // Export data type if needed
   if (shouldExtractNode(dataType)) {
     const dataTypeIdentifier = pascal(`${operationId}Response`);
@@ -159,18 +171,6 @@ export const getOperationTypes = ({
     );
 
     dataType = f.createTypeReferenceNode(dataTypeIdentifier);
-  }
-
-  if (has204) {
-    dataType = ts.isUnionTypeNode(dataType)
-      ? f.createUnionTypeNode([
-          ...dataType.types,
-          f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
-        ])
-      : f.createUnionTypeNode([
-          dataType,
-          f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
-        ]);
   }
 
   // Export requestBody type if needed
@@ -258,4 +258,5 @@ export const getOperationTypes = ({
 const shouldExtractNode = (node: ts.Node) =>
   ts.isIntersectionTypeNode(node) ||
   (ts.isTypeLiteralNode(node) && node.members.length > 0) ||
-  ts.isArrayTypeNode(node);
+  ts.isArrayTypeNode(node) ||
+  ts.isUnionTypeNode(node);
