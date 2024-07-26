@@ -30,7 +30,7 @@ describe("getDataResponseType", () => {
       },
     };
 
-    const responseType = getDataResponseType({
+    const [responseType] = getDataResponseType({
       responses,
       printNodes: (nodes) => nodes.map(print).join("\n"),
     });
@@ -68,7 +68,7 @@ describe("getDataResponseType", () => {
       },
     };
 
-    const responseType = getDataResponseType({
+    const [responseType] = getDataResponseType({
       responses,
       printNodes: (nodes) => nodes.map(print).join("\n"),
     });
@@ -106,7 +106,7 @@ describe("getDataResponseType", () => {
       },
     };
 
-    const responseType = getDataResponseType({
+    const [responseType] = getDataResponseType({
       responses,
       printNodes: (nodes) => nodes.map(print).join("\n"),
     });
@@ -119,11 +119,39 @@ describe("getDataResponseType", () => {
   it("should returns undefined when no response", () => {
     const responses: ResponsesObject = {};
 
-    const responseType = getDataResponseType({
+    const [responseType] = getDataResponseType({
       responses,
       printNodes: (nodes) => nodes.map(print).join("\n"),
     });
 
     expect(print(responseType)).toMatchInlineSnapshot(`"undefined"`);
+  });
+
+  it("should union undefined when also a 204 response", () => {
+    const responses: ResponsesObject = {
+      "200": {
+        description: "pet response",
+        content: {
+          "application/json": {
+            schema: {
+              type: "array",
+              items: {
+                $ref: "#/components/schemas/Pet",
+              },
+            },
+          },
+        },
+      },
+      "204": {
+        description: "no content",
+      },
+    };
+
+    const [responseType, has204] = getDataResponseType({
+      responses,
+      printNodes: (nodes) => nodes.map(print).join("\n"),
+    });
+    expect(has204).toBe(true);
+    expect(print(responseType)).toMatchInlineSnapshot(`"Schemas.Pet[]"`);
   });
 });

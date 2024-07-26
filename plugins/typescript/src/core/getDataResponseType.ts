@@ -23,10 +23,11 @@ export const getDataResponseType = ({
   responses?: ResponsesObject;
   components?: ComponentsObject;
   printNodes: (nodes: ts.Node[]) => string;
-}) => {
+}): [ts.TypeNode, boolean] => {
   if (responses === undefined) {
-    return f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword);
+    return [f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword), false];
   }
+  let has204 = false;
   const responseTypes = uniqBy(
     Object.entries(responses).reduce(
       (
@@ -34,6 +35,12 @@ export const getDataResponseType = ({
         [statusCode, response]: [string, ResponseObject | ReferenceObject],
       ) => {
         if (!statusCode.startsWith("2")) return mem;
+
+        if (statusCode === "204") {
+          has204 = true;
+          return mem;
+        }
+
         if (isReferenceObject(response)) {
           const [hash, topLevel, namespace, name] = response.$ref.split("/");
           if (hash !== "#" || topLevel !== "components") {
@@ -74,9 +81,11 @@ export const getDataResponseType = ({
     (node) => printNodes([node]),
   );
 
-  return responseTypes.length === 0
-    ? f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
-    : responseTypes.length === 1
-      ? responseTypes[0]
-      : f.createUnionTypeNode(responseTypes);
+  const responseType =
+    responseTypes.length === 0
+      ? f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword)
+      : responseTypes.length === 1
+        ? responseTypes[0]
+        : f.createUnionTypeNode(responseTypes);
+  return [responseType, has204 && responseTypes.length > 0];
 };

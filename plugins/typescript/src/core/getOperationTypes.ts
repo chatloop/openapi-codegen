@@ -51,11 +51,13 @@ export const getOperationTypes = ({
   const declarationNodes: ts.Node[] = [];
 
   // Retrieve dataType
-  let dataType = getDataResponseType({
+  const dataTypeTuple = getDataResponseType({
     responses: operation.responses,
     components: openAPIDocument.components,
     printNodes,
   });
+  let dataType = dataTypeTuple[0];
+  const has204 = dataTypeTuple[1];
 
   // Retrieve errorType
   let errorType = getErrorResponseType({
@@ -157,6 +159,18 @@ export const getOperationTypes = ({
     );
 
     dataType = f.createTypeReferenceNode(dataTypeIdentifier);
+  }
+
+  if (has204) {
+    dataType = ts.isUnionTypeNode(dataType)
+      ? f.createUnionTypeNode([
+          ...dataType.types,
+          f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+        ])
+      : f.createUnionTypeNode([
+          dataType,
+          f.createKeywordTypeNode(ts.SyntaxKind.UndefinedKeyword),
+        ]);
   }
 
   // Export requestBody type if needed
