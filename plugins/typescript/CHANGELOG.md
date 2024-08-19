@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.6.4](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.3...openapi-codegen-typescript-v9.6.4) (2024-08-19)
+
+
+### Bug Fixes
+
+* fix string enum keys for values with spaces ([0d51675](https://github.com/chatloop/openapi-codegen/commit/0d516755b969e2f60ad8796ab6abc1e9a596a483))
+
 ## [9.6.3](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.2...openapi-codegen-typescript-v9.6.3) (2024-07-26)
 
 
