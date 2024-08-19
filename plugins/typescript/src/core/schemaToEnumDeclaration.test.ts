@@ -7,14 +7,15 @@ describe("schemaToTypeAliasDeclaration", () => {
   it("should generate a string enums", () => {
     const schema: SchemaObject = {
       type: "string",
-      enum: ["AVAILABLE", "PENDING", "SOLD"],
+      enum: ["AVAILABLE", "PENDING", "SOLD", "WITH SPACE"],
     };
 
     expect(printSchema(schema)).toMatchInlineSnapshot(`
      "export enum Test {
          AVAILABLE = "AVAILABLE",
          PENDING = "PENDING",
-         SOLD = "SOLD"
+         SOLD = "SOLD",
+         "WITH SPACE" = "WITH SPACE"
      }"
     `);
   });
