@@ -1,5 +1,12 @@
 # Changelog
 
+## [9.6.5](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.4...openapi-codegen-typescript-v9.6.5) (2024-11-07)
+
+
+### Bug Fixes
+
+* fix types in templated context and fetcher ([33b8036](https://github.com/chatloop/openapi-codegen/commit/33b8036762eb81b07ea8459415fea07c72b86f08))
+
 ## [9.6.4](https://github.com/chatloop/openapi-codegen/compare/openapi-codegen-typescript-v9.6.3...openapi-codegen-typescript-v9.6.4) (2024-08-19)
 
 

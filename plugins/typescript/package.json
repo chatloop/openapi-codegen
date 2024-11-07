@@ -1,6 +1,6 @@
 {
   "name": "@chatloop/openapi-codegen-typescript",
-  "version": "9.6.4",
+  "version": "9.6.5",
   "description": "OpenAPI Codegen typescript generators",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
