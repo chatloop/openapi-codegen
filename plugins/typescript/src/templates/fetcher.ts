@@ -28,13 +28,19 @@ export const getFetcher = ({
        **/
     }`
   }
+import { isEmpty, omitBy, isNil } from "lodash-es";
 
 const baseUrl = ${baseUrl ? `"${baseUrl}"` : `""; // TODO add your baseUrl`}
 
+type Params = Record<
+  string,
+  string | number | boolean | Array<string | number | boolean>
+>;
+
 export type ErrorWrapper<TError> =
   | TError
-  | { status: "unknown"; payload: string };
-
+  | { status: "unknown"; payload: string }
+  
 export type ${pascal(
     prefix,
   )}FetcherOptions<TBody, THeaders, TQueryParams, TPathParams> = {
@@ -105,8 +111,8 @@ export async function ${camel(`${prefix}Fetch`)}<
           status: "unknown" as const,
           payload:
             e instanceof Error
-              ? \`Unexpected error (\${e.message})\`
-              : "Unexpected error"
+              ? \`Unexpected error parsing error response (\${e.message})\`
+              : 'Unexpected error parsing error response'
         };
       }
 
@@ -130,13 +136,31 @@ export async function ${camel(`${prefix}Fetch`)}<
   }
 }
 
+const omitWhereEmpty = (obj: Parameters<typeof omitBy>[0]) =>
+  omitBy(obj, value => {
+    // return true in predicate for data types
+    // where empty is meaningful
+    if (
+      typeof value === 'string' ||
+      typeof value === 'object' ||
+      Array.isArray(value)
+    ) {
+      return isEmpty(value)
+    }
+
+    // otherwise just check if not null or undefined
+    return isNil(value)
+  })
+  
 const resolveUrl = (
   url: string,
-  queryParams: Record<string, string> = {},
-  pathParams: Record<string, string> = {}
+  queryParams: Params = {},
+  pathParams: Record<string, string | number | boolean> = {}
 ) => {
-  let query = new URLSearchParams(queryParams).toString();
+  let query = new URLSearchParams(
+    omitWhereEmpty(queryParams) as Record<string, string>
+  ).toString()
   if (query) query = \`?\${query}\`;
-  return url.replace(/\\{\\w*\\}/g, (key) => pathParams[key.slice(1, -1)]) + query;
+  return url.replace(/\\{\\w*}/g, (key) => pathParams[key.slice(1, -1)].toString()) + query;
 };
 `;

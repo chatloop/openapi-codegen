@@ -1,7 +1,7 @@
 import { pascal } from "case";
 
 export const getContext = (prefix: string, componentsFile: string) =>
-  `import type { QueryKey } from "@tanstack/react-query";
+  `import type { QueryClient, QueryKey } from "@tanstack/react-query";
   import {
     QueryOperation,
     MutationOperation,
@@ -11,7 +11,7 @@ export const getContext = (prefix: string, componentsFile: string) =>
   } from './${componentsFile}';
   
   export type ${pascal(prefix)}Context = {
-    fetcherOptions: {
+    fetcherOptions?: {
       /**
        * Headers to inject in the fetcher
        */
@@ -21,7 +21,7 @@ export const getContext = (prefix: string, componentsFile: string) =>
        */
       queryParams?: {};
     };
-    queryOptions: {
+    queryOptions?: {
       /**
        * Set this to \`false\` to disable automatic refetching when the query mounts or changes query keys.
        * Defaults to \`true\`.
@@ -59,8 +59,12 @@ export const getContext = (prefix: string, componentsFile: string) =>
     ) => TVariables
   }
 
-  export type ${pascal(prefix)}MutationContext = {
-    fetcherOptions: {
+  export type ${pascal(prefix)}MutationContext<
+    TData = unknown,
+    TVariables = unknown,
+    TContext = unknown,
+  > = {
+    fetcherOptions?: {
       /**
        * Headers to inject in the fetcher
        */
@@ -72,6 +76,15 @@ export const getContext = (prefix: string, componentsFile: string) =>
       // eslint-disable-next-line @typescript-eslint/ban-types
       queryParams?: {}
     }
+    onMutate?: (
+      variables: TVariables
+    ) => Promise<TContext | void> | TContext | void
+    onSuccess?: (
+      data: TData,
+      variables: TVariables,
+      context: TContext,
+      queryClient: QueryClient
+    ) => unknown
   }
   /**
    * Context injected into every react-query useQuery hook wrapper
@@ -80,14 +93,15 @@ export const getContext = (prefix: string, componentsFile: string) =>
      TQueryFnData = unknown,
      TError = unknown,
      TData = TQueryFnData,
-     TQueryKey extends QueryKey = QueryKey
    >(
-     operation: QueryOperation,
-     _queryOptions?: Omit<UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, 'queryKey' | 'queryFn'>
+      // @ts-expect-error operation is not used ...yet
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      operation: QueryOperation,
+      // @ts-expect-error queryOptionsIn is not used ...yet
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      queryOptionsIn?: UseQueryOptions<TQueryFnData, TError, TData>
    ): ${pascal(prefix)}Context {
       return {
-        fetcherOptions: {},
-        queryOptions: {},
         queryKeyFn
     }
   }
@@ -107,18 +121,20 @@ export const getContext = (prefix: string, componentsFile: string) =>
         }
       }
     },
-    _queryOptions?: UseInfiniteQueryOptions<TQueryFnData, TError, TData>
+    // @ts-expect-error queryOptionsIn is not used ...yet
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    queryOptionsIn?: UseInfiniteQueryOptions<TQueryFnData, TError, TData>
   ): ${pascal(prefix)}InfiniteContext<number, TQueryFnData> {
     const initialPageParam = operation.variables.queryParams &&
     operation.variables.queryParams['page'] ? operation.variables.queryParams['page'] : 1
     return {
-      fetcherOptions: {},
-      queryOptions: {},
       queryKeyFn,
       initialPageParam,
       getNextPageParam: (lastPage, allPages) => {
         return lastPage ? initialPageParam + allPages.length : undefined
       },
+      // @ts-expect-error firstPage and allPages are not used ...yet
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       getPreviousPageParam: (firstPage, allPages) => {
           return undefined
       },
@@ -142,16 +158,19 @@ export const getContext = (prefix: string, componentsFile: string) =>
  * Context injected into every react-query useMutation hook wrapper
  */
 export function use${pascal(prefix)}MutationContext<
-  TQueryFnData = unknown,
+  TData = unknown,
   TError = unknown,
-  TVariables = unknown
+  TVariables = unknown,
+  TContext = unknown,
 >(
+  // @ts-expect-error operation is not used ...yet
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   operation: MutationOperation,
-  mutationOptions?: UseMutationOptions<TQueryFnData, TError, TVariables>
-): MutationContext {
-  return {
-    fetcherOptions: globalFetcherOptions
-  }
+  // @ts-expect-error mutationOptionsIn is not used ...yet
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  mutationOptionsIn?: UseMutationOptions<TData, TError, TVariables, TContext>
+): MutationContext<TData, TVariables, TContext> {
+  return {}
 }
 
   export const queryKeyFn = (operation: QueryOperation, fetcherOptions: Context['fetcherOptions']) => {
